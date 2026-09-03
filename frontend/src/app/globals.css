@@ -1,0 +1,205 @@
+@import "tailwindcss";
+
+/* ═══════════════════════════════════════════════════════════════════
+   SUBSCIO — Enterprise B2B Signals Harvesting Engine
+   Imperial Cybernetics Design System
+   ═══════════════════════════════════════════════════════════════════ */
+
+/* ── Design Tokens ─────────────────────────────────────────────── */
+:root {
+  /* Background Canvases */
+  --bg-obsidian: #0C1519; /* Primary Background */
+  --bg-jungle: #162127; /* Structural Cards, Workspaces, Bento */
+  --bg-astral-glow: rgba(46, 16, 101, 0.2); /* Deep Astral Violet glow */
+
+  /* Typography */
+  --text-pearl: #F8FAFC; /* Headers */
+  --text-stone: #94A3B8; /* Timestamps, logs, metadata */
+  
+  /* Accents */
+  --accent-gold: #CA9C68; /* Primary CTA, active focus, 1px borders */
+  --accent-brass: #CF9D7B; 
+  --accent-cyan: #00F0FF; /* Live radar, high-intent */
+  --accent-emerald: #10B981; /* Live badges */
+}
+
+/* ── Tailwind v4 Theme Extension ───────────────────────────────── */
+@theme inline {
+  --color-background: var(--bg-obsidian);
+  --color-foreground: var(--text-pearl);
+  --font-sans: "Hanken Grotesk", system-ui, sans-serif;
+  --font-mono: "Space Mono", ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+
+  /* Custom Colors */
+  --color-obsidian: var(--bg-obsidian);
+  --color-jungle: var(--bg-jungle);
+  --color-gold: var(--accent-gold);
+  --color-brass: var(--accent-brass);
+  --color-cyan: var(--accent-cyan);
+  --color-emerald: var(--accent-emerald);
+  --color-pearl: var(--text-pearl);
+  --color-stone: var(--text-stone);
+  
+  /* Typography Scale */
+  --text-display-lg: 48px;
+  --text-display-lg--line-height: 56px;
+  --text-display-lg--letter-spacing: -0.02em;
+  --text-display-lg--font-weight: 700;
+  
+  --text-headline-md: 24px;
+  --text-headline-md--line-height: 32px;
+  --text-headline-md--letter-spacing: -0.01em;
+  --text-headline-md--font-weight: 600;
+
+  --text-header-micro: 11px;
+  --text-header-micro--line-height: 16px;
+  --text-header-micro--letter-spacing: 0.15em;
+  --text-header-micro--font-weight: 800;
+
+  --text-body-lg: 16px;
+  --text-body-lg--line-height: 24px;
+  --text-body-lg--font-weight: 400;
+
+  --text-body-md: 14px;
+  --text-body-md--line-height: 20px;
+  --text-body-md--font-weight: 400;
+
+  --text-label-sm: 12px;
+  --text-label-sm--line-height: 16px;
+  --text-label-sm--letter-spacing: 0.02em;
+  --text-label-sm--font-weight: 500;
+
+  --text-mono-data: 13px;
+  --text-mono-data--line-height: 18px;
+  --text-mono-data--letter-spacing: -0.01em;
+  --text-mono-data--font-weight: 500;
+}
+
+/* ── Global Reset ──────────────────────────────────────────────── */
+* {
+  box-sizing: border-box;
+}
+
+html, body {
+  min-height: 100vh;
+}
+
+body {
+  @apply bg-gradient-to-b from-[#0C1519] via-[#080E11] to-[#0C1519];
+  color: var(--text-pearl);
+  font-family: "Hanken Grotesk", system-ui, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* ── Utility Classes ───────────────────────────────────────────── */
+
+/* Glassmorphism Cards */
+.glass-panel {
+  background-color: rgba(22, 33, 39, 0.5); /* Jungle Green 50% */
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(202, 156, 104, 0.2); /* Gold 20% */
+  border-radius: 0.375rem; /* rounded-md */
+}
+
+.glossy-card {
+  background-color: rgba(22, 33, 39, 0.6);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid;
+  border-image-source: linear-gradient(to bottom right, rgba(202, 156, 104, 0.5), rgba(0, 240, 255, 0.1));
+  border-image-slice: 1;
+  /* Since border-image removes border-radius, we use a different approach for gradient borders with radius */
+  position: relative;
+  border-radius: 0.375rem;
+  box-shadow: 0 10px 30px -10px rgba(0,0,0,0.5);
+}
+
+.glossy-card::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: 0.375rem;
+  padding: 1px;
+  background: linear-gradient(to bottom right, rgba(202, 156, 104, 0.5), rgba(0, 240, 255, 0.2));
+  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  pointer-events: none;
+}
+
+/* 1. Metallic Text Utility */
+.text-metallic-gold {
+  background: linear-gradient(135deg, #F9D976 0%, #E8B546 50%, #B88029 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  color: transparent;
+  display: inline-block;
+}
+
+/* 2. Metallic Solid Button Utility */
+.btn-metallic-gold {
+  background: linear-gradient(135deg, #F9D976 0%, #E8B546 50%, #B88029 100%);
+  box-shadow: inset 0px 1px 2px rgba(255, 255, 255, 0.6), 0px 4px 15px rgba(232, 181, 70, 0.3);
+  color: #050B14 !important;
+  font-weight: 700;
+  border: none;
+  border-radius: 0.375rem;
+  transition: all 0.2s ease-in-out;
+}
+.btn-metallic-gold:hover {
+  filter: brightness(1.1);
+  box-shadow: inset 0px 1px 3px rgba(255, 255, 255, 0.8), 0px 6px 20px rgba(232, 181, 70, 0.45);
+}
+
+/* 3. Outlined Elements & Borders */
+.border-metallic-gold {
+  border: 1px solid #E8B546;
+  border-radius: 0.375rem;
+  box-shadow: 0 0 10px rgba(232, 181, 70, 0.15);
+}
+
+/* ── Scrollbar Styling ─────────────────────────────────────────── */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: rgba(202, 156, 104, 0.3);
+  border-radius: 3px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(202, 156, 104, 0.6);
+}
+
+/* ── Animations ────────────────────────────────────────────────── */
+@keyframes pulse-ring {
+  0% { transform: scale(1); opacity: 1; }
+  100% { transform: scale(1.6); opacity: 0; }
+}
+
+@keyframes radar-sweep {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+@keyframes smooth-bounce {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-10px); }
+}
+
+.animate-pulse-ring {
+  animation: pulse-ring 2s cubic-bezier(0.215, 0.61, 0.355, 1) infinite;
+}
+
+.animate-radar-sweep {
+  animation: radar-sweep 3s linear infinite;
+}
+
+.animate-smooth-bounce {
+  animation: smooth-bounce 4s ease-in-out infinite;
+}
