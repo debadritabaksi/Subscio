@@ -1,0 +1,21 @@
+ Subscio Terminal
+
+Backend
+.\venv\Scripts\activate
+
+uvicorn main:app --reload --port 8000
+
+
+
+Test Case:
+Test Profile A: Consumer Electronics / D2C (B2B Corporate Gifting Angle)
+Company Name: boAt Lifestyle
+
+Company Website URL: https://www.boat-lifestyle.com
+Email: admin@boat-test.com
+
+Password: Password123
+
+Description : Premium audio device brand.
+
+Expected Discovered ICP Targets: Tata Consultancy Services, Infosys, Wipro, Zomato, Swiggy (Large enterprises with corporate gifting, HR rewards, or wellness programs)

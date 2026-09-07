@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import { motion } from "framer-motion";
 import { X, Send, ShieldAlert } from "lucide-react";
 
@@ -14,14 +15,32 @@ interface Lead {
   created_at: string;
 }
 
+function cleanPitch(draft: string | null): string {
+  if (!draft) return "No draft available.";
+  let text = draft.trim();
+  if (text.startsWith("{") && text.includes("}")) {
+    try {
+      const parsed = JSON.parse(text);
+      if (parsed.email) return parsed.email;
+      if (parsed.pitch) return parsed.pitch;
+      const values = Object.values(parsed);
+      for (const v of values) {
+        if (typeof v === "string" && v.length > 20) return v;
+      }
+    } catch {}
+  }
+  return text;
+}
+
 export default function PitchApprovalModal({ lead, onClose }: { lead: Lead; onClose: () => void }) {
-  
+  const [pitchText, setPitchText] = useState(() => cleanPitch(lead.pitch_draft));
+
   const handleApprove = () => {
     // Basic extract from title since no explicit email field, default to founders@company
     const companyClean = lead.company_name.toLowerCase().replace(/[^a-z0-9]/g, '');
     const email = `founders@${companyClean}.com`;
     const subject = `Partnership Opportunity`;
-    const body = lead.pitch_draft || "";
+    const body = pitchText;
     
     window.location.href = `mailto:${email}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
     
@@ -69,11 +88,15 @@ export default function PitchApprovalModal({ lead, onClose }: { lead: Lead; onCl
           </div>
 
           <div>
-            <label className="text-[10px] font-bold uppercase tracking-wider text-[#CA9C68] mb-2 block">AI Drafted Pitch</label>
+            <div className="flex items-center justify-between mb-2">
+              <label className="text-[10px] font-bold uppercase tracking-wider text-[#CA9C68] block">Warm AI Drafted Pitch (Corsair Reframed)</label>
+              <span className="text-[10px] text-gray-400">Editable before send</span>
+            </div>
             <textarea 
-              readOnly
               className="w-full h-64 p-4 text-sm text-[#F8FAFC] bg-[#0C1519]/50 border border-[#CA9C68]/20 rounded-md focus:outline-none focus:ring-1 focus:ring-[#CA9C68] resize-none font-medium leading-relaxed shadow-inner"
-              value={lead.pitch_draft || "No draft available."}
+              value={pitchText}
+              onChange={(e) => setPitchText(e.target.value)}
+              placeholder="Draft your pitch here..."
             />
           </div>
         </div>

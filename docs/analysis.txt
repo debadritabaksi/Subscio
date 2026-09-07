@@ -1,0 +1,62 @@
+ Part 1: How the Subscio 6-Agent Engine Works
+Think of your backend as an automated assembly line. The conveyor belt is your database, and each agent only works on items that have a specific status tag.
+
+[Target URL] 
+   │
+   ▼
+[Agent 1: Discovery] ──► Generates 5 Target Companies (`target_profiles`)
+   │
+   ▼
+[Agent 2: Harvester] ──► Scrapes signals (`harvested_signals` -> status: "un_analyzed")
+   │
+   ▼
+[Agent 3: Intent]    ──► Classifies buying stage (status: "intent_classified")
+   │
+   ▼
+[Agent 4: Scoring]   ──► Calculates score 1-100 (If ≥ threshold ──► Promotes to `leads`)
+   │
+   ▼
+[Agent 5: Corsair]   ──► Drafts custom outreach email (`leads` -> status: "pending_approval")
+   │
+   ▼
+[Agent 6: Analytics] ──► On-demand GET request: Summarizes the pipeline for the dashboard UI
+Step-by-Step Breakdown of Each Agent
+1. Agent 1 — Discovery Engine
+When it runs: Instantly when you click "Register" or submit your company URL.
+
+What it does: Scrapes your website URL to figure out what your product does, asks Gemini who your target customers are, and saves 5 discovered company names into target_profiles.
+
+The Output: 5 company rows in target_profiles marked with status = "discovered".
+
+2. Agent 2 — Signal Harvester
+When it runs: Right after registration (or every 15 minutes via Celery Beat).
+
+What it does: Looks for companies in target_profiles with status = "discovered". It gathers signals (funding news, hiring sprees, tech stack shifts) for each company, generates a SHA-256 hash to prevent duplicate entries, and saves them.
+
+The Output: New rows in harvested_signals with status = "un_analyzed".
+
+3. Agent 3 — Intent Analyzer
+When it runs: Right after Agent 2 finishes (or every 5 minutes).
+
+What it does: Grabs all signals marked un_analyzed, sends the text to Gemini, and asks: "Is this company just browsing (Awareness), evaluating solutions (Consideration), or ready to buy (Purchase Ready)?"
+
+The Output: Updates the signal row in harvested_signals with status = "intent_classified".
+
+4. Agent 4 — Score Calculator
+When it runs: Immediately after Agent 3 finishes.
+
+What it does: Reads the intent_classified signals and calculates a score from 1 to 100 based on buying stage, data source, and recency.
+
+The Gatekeeper Rule: If a signal scores above the threshold, Agent 4 promotes that company from a raw signal into the official leads table with corsair_status = "pending_analysis".
+
+5. Agent 5 — Corsair Pitch Generator
+When it runs: Immediately after Agent 4 promotes a lead.
+
+What it does: Finds leads marked pending_analysis and uses Gemini to write a personalized, 3-sentence cold outreach email based on the company's recent signals.
+
+The Output: Writes the pitch draft into leads.pitch_draft and marks the lead as corsair_status = "pending_approval".
+
+6. Agent 6 — Intelligence Dashboard / Analytics
+When it runs: On-demand whenever your frontend dashboard loads (GET /api/v1/analytics/summary).
+
+What it does: Aggregates funnel statistics, pulls the top scored leads, asks Gemini for an executive summary paragraph, and sends the entire JSON payload to your React UI.

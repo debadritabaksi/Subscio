@@ -31,15 +31,19 @@ export default function Navbar() {
       
       {/* ── Left: Branding ────────────────────────────────────────────── */}
       <div className="flex items-center gap-8">
-        <div className="flex items-center gap-2">
-          <div className="w-7 h-7 bg-red-50 text-red-700 rounded-md flex items-center justify-center">
+        <button
+          onClick={() => router.push("/")}
+          title="Go to Subscio homepage"
+          className="flex items-center gap-2 cursor-pointer group"
+        >
+          <div className="w-7 h-7 bg-red-50 text-red-700 rounded-md flex items-center justify-center group-hover:bg-[#CA9C68]/20 transition-colors">
             <Activity size={16} strokeWidth={2.5} />
           </div>
           <div>
-            <h1 className="text-lg font-bold tracking-tight uppercase leading-none text-[#F8FAFC]">Subscio</h1>
+            <h1 className="text-lg font-bold tracking-tight uppercase leading-none text-[#F8FAFC] group-hover:text-[#CA9C68] transition-colors">Subscio</h1>
             <span className="text-[9px] font-bold text-[#CA9C68] tracking-widest uppercase">Signals Engine</span>
           </div>
-        </div>
+        </button>
 
         {/* ── Navigation Tabs (Local State — No Page Reload) ──────────── */}
         <div className="hidden md:flex items-center gap-6">
@@ -82,8 +86,16 @@ export default function Navbar() {
           <button className="w-8 h-8 rounded-md border border-[#CA9C68]/20 bg-[#0C1519]/50 flex items-center justify-center hover:bg-[#CA9C68]/10 transition-colors">
             <Bell size={16} className="text-gray-400" />
           </button>
-          <button className="w-8 h-8 rounded-md border border-[#CA9C68]/20 bg-[#0C1519]/50 flex items-center justify-center hover:bg-[#CA9C68]/10 transition-colors">
-            <Settings size={16} className="text-gray-400" />
+          <button 
+            onClick={() => setActiveTab(activeTab === "settings" ? "command" : "settings")}
+            title="Organization Settings & Profile"
+            className={`w-8 h-8 rounded-md border flex items-center justify-center transition-colors ${
+              activeTab === "settings"
+                ? "border-[#CA9C68] bg-[#CA9C68]/20 text-[#CA9C68]"
+                : "border-[#CA9C68]/20 bg-[#0C1519]/50 text-gray-400 hover:bg-[#CA9C68]/10 hover:text-[#CA9C68]"
+            }`}
+          >
+            <Settings size={16} />
           </button>
           
           {/* User Menu / Avatar */}
@@ -102,7 +114,7 @@ export default function Navbar() {
                 </div>
                 <div className="p-1">
                   <button 
-                    onClick={() => { window.open('/settings', '_blank'); setIsMenuOpen(false); }}
+                    onClick={() => { setActiveTab("settings"); setIsMenuOpen(false); }}
                     className="w-full text-left px-3 py-2 text-xs font-bold text-gray-300 hover:bg-[#CA9C68]/10 hover:text-[#CA9C68] rounded-md transition-colors"
                   >
                     Edit Profile

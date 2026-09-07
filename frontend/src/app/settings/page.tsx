@@ -2,10 +2,25 @@
 
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { Activity, Save, Trash2 } from "lucide-react";
+import { Activity, Save, Trash2, ArrowLeft } from "lucide-react";
+import { useDashboard } from "@/components/DashboardContext";
 
 export default function SettingsPage() {
   const router = useRouter();
+  let dashboard: ReturnType<typeof useDashboard> | null = null;
+  try {
+    dashboard = useDashboard();
+  } catch {
+    dashboard = null;
+  }
+
+  const handleBackToDashboard = () => {
+    if (dashboard) {
+      dashboard.setActiveTab("command");
+    } else {
+      router.push("/dashboard");
+    }
+  };
   // State for all fields
   const [username, setUsername] = useState("");
   const [email, setEmail] = useState("");
@@ -159,14 +174,23 @@ export default function SettingsPage() {
       <div className="max-w-4xl mx-auto space-y-8">
         
         {/* Header */}
-        <div className="flex items-center gap-4 border-b border-[#CA9C68]/20 pb-4">
-          <div className="w-10 h-10 bg-red-50 text-red-700 rounded-md flex items-center justify-center">
-            <Activity size={24} strokeWidth={2.5} />
+        <div className="flex items-center justify-between border-b border-[#CA9C68]/20 pb-4">
+          <div className="flex items-center gap-4">
+            <div className="w-10 h-10 bg-red-50 text-red-700 rounded-md flex items-center justify-center">
+              <Activity size={24} strokeWidth={2.5} />
+            </div>
+            <div>
+              <h1 className="text-2xl font-bold tracking-tight uppercase leading-none text-[#F8FAFC]">Organization Settings</h1>
+              <span className="text-xs font-bold text-[#CA9C68] tracking-widest uppercase">Configure your workspace and profile</span>
+            </div>
           </div>
-          <div>
-            <h1 className="text-2xl font-bold tracking-tight uppercase leading-none text-[#F8FAFC]">Organization Settings</h1>
-            <span className="text-xs font-bold text-[#CA9C68] tracking-widest uppercase">Configure your workspace and profile</span>
-          </div>
+          <button
+            onClick={handleBackToDashboard}
+            className="flex items-center gap-2 px-3.5 py-2 rounded-lg border border-[#CA9C68]/30 bg-[#162127] hover:bg-[#CA9C68]/15 text-[#CA9C68] hover:text-[#F8FAFC] text-xs font-mono font-bold transition-all shadow-md"
+          >
+            <ArrowLeft size={14} />
+            <span>Back to Dashboard</span>
+          </button>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">

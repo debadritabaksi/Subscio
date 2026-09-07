@@ -36,6 +36,7 @@ interface BackendSignal {
   company_name: string;
   dedup_hash: string;
   intent_score: number | null;
+  intent_stage: string;
   created_at: string;
 }
 
@@ -67,6 +68,7 @@ function formatTimeAgo(isoString: string): string {
   return `${days} day${days > 1 ? "s" : ""} ago`;
 }
 
+// Legacy fallback mapping, just in case
 function mapCategoryToIntent(category: string): string {
   const mapping: Record<string, string> = {
     funding: "Purchase Ready",
@@ -77,6 +79,11 @@ function mapCategoryToIntent(category: string): string {
     creator: "Awareness",
   };
   return mapping[category] || "Awareness";
+}
+
+function formatIntentStage(stage: string): string {
+  const formatted = stage.replace(/_/g, " ").toLowerCase();
+  return formatted.replace(/\b\w/g, l => l.toUpperCase());
 }
 
 function mapSourceLabel(source: string): string {
@@ -98,10 +105,22 @@ function deriveStatus(intentScore: number | null): string {
 }
 
 function mapBackendSignal(sig: BackendSignal): PipelineRow {
+  let intentDisplay = "Awareness";
+  if (sig.intent_stage && sig.intent_stage.trim()) {
+    intentDisplay = formatIntentStage(sig.intent_stage);
+  } else if (sig.intent_score !== null && sig.intent_score !== undefined && sig.intent_score > 0) {
+    if (sig.intent_score >= 85) intentDisplay = "Purchase Ready";
+    else if (sig.intent_score >= 70) intentDisplay = "Consideration";
+    else if (sig.intent_score >= 40) intentDisplay = "Awareness";
+    else intentDisplay = "Targeting";
+  } else {
+    intentDisplay = mapCategoryToIntent(sig.category);
+  }
+
   return {
     id: sig.id,
     company: sig.company_name || "Unknown Company",
-    intent: mapCategoryToIntent(sig.category),
+    intent: intentDisplay,
     score: sig.intent_score ?? 0,
     source: mapSourceLabel(sig.source),
     lastActive: formatTimeAgo(sig.created_at),

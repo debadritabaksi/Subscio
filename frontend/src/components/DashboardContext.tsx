@@ -3,7 +3,7 @@
 import { createContext, useContext, useState, useEffect, type ReactNode } from "react";
 
 /* ── Types ────────────────────────────────────────────────────── */
-export type DashboardTab = "command" | "pipeline" | "ledger" | "intelligence";
+export type DashboardTab = "command" | "pipeline" | "ledger" | "intelligence" | "settings";
 
 export interface UserProfile {
   name: string;

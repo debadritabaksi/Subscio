@@ -61,7 +61,17 @@ export default function PipelineTable() {
   // SAFTEY NET: Ensure leads is always treated as an array to prevent .filter() crashes
   const safeLeads = Array.isArray(leads) ? leads : [];
 
-  const filteredLeads = safeLeads.filter(l => {
+  // Deduplication guard: ensure identical news signals never produce duplicate pipeline rows
+  const seenTitles = new Set<string>();
+  const dedupedLeads = safeLeads.filter(l => {
+    const norm = (l.title || "").trim().toLowerCase();
+    if (!norm) return true;
+    if (seenTitles.has(norm)) return false;
+    seenTitles.add(norm);
+    return true;
+  });
+
+  const filteredLeads = dedupedLeads.filter(l => {
     // Also protect against undefined company_name or title from the database
     const company = l.company_name || "";
     const title = l.title || "";

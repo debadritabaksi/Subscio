@@ -9,6 +9,7 @@ import { ShieldCheck } from "lucide-react";
 import PipelineTable from "@/components/PipelineTable";
 import DashboardAnalytics from "@/components/DashboardAnalytics";
 import ComplianceLedger from "@/components/ComplianceLedger";
+import SettingsPage from "@/app/settings/page";
 
 export default function DashboardPage() {
   const { activeTab } = useDashboard();
@@ -28,6 +29,10 @@ export default function DashboardPage() {
 
   if (activeTab === "ledger") {
     return <ComplianceLedger />;
+  }
+
+  if (activeTab === "settings") {
+    return <div className="h-full w-full overflow-y-auto"><SettingsPage /></div>;
   }
 
   // Default: Command Center

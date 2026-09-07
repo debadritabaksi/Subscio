@@ -33,6 +33,7 @@ interface BackendSignal {
   company_name: string;
   dedup_hash: string;
   intent_score: number | null;
+  intent_stage: string;
   created_at: string;
 }
 
@@ -60,6 +61,11 @@ function formatTime(isoString: string): string {
   } catch {
     return "—";
   }
+}
+
+function formatIntentStage(stage: string): string {
+  const formatted = stage.replace(/_/g, " ").toLowerCase();
+  return formatted.replace(/\b\w/g, l => l.toUpperCase());
 }
 
 function mapCategoryToIntent(category: string): string {
@@ -108,12 +114,24 @@ const sourceIcons: Record<string, React.ReactNode> = {
 };
 
 function mapBackendSignal(sig: BackendSignal): DisplaySignal {
+  let intentStr = "Awareness";
+  if (sig.intent_stage && sig.intent_stage.trim()) {
+    intentStr = formatIntentStage(sig.intent_stage);
+  } else if (sig.intent_score !== null && sig.intent_score !== undefined && sig.intent_score > 0) {
+    if (sig.intent_score >= 85) intentStr = "Purchase Ready";
+    else if (sig.intent_score >= 70) intentStr = "Consideration";
+    else if (sig.intent_score >= 40) intentStr = "Awareness";
+    else intentStr = "Targeting";
+  } else {
+    intentStr = mapCategoryToIntent(sig.category);
+  }
+
   return {
     id: sig.id,
     timestamp: formatTime(sig.created_at),
     company: sig.company_name || "Unknown",
     title: sig.title,
-    intent: mapCategoryToIntent(sig.category),
+    intent: intentStr,
     category: sig.category as SignalCategory,
     source: sig.source,
     score: sig.intent_score ?? 0,

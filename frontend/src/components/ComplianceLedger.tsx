@@ -8,6 +8,7 @@ const API_BASE = "http://localhost:8000";
 interface AuditLog {
     id: string;
     company_name: string;
+    title?: string;
     source: string;
     dedup_hash: string;
     created_at: string;
@@ -23,7 +24,15 @@ export default function ComplianceLedger() {
                 const res = await fetch(`${API_BASE}/api/v1/webhooks/signals`);
                 if (res.ok) {
                     const data = await res.json();
-                    setLogs(data);
+                    const seen = new Set<string>();
+                    const uniqueLogs = (Array.isArray(data) ? data : []).filter((item: AuditLog) => {
+                        const normTitle = (item.title || "").trim().toLowerCase();
+                        const key = normTitle || item.dedup_hash || item.id;
+                        if (seen.has(key)) return false;
+                        seen.add(key);
+                        return true;
+                    });
+                    setLogs(uniqueLogs);
                 }
             } catch (e) {
                 console.error("Failed to fetch compliance logs", e);
@@ -43,7 +52,7 @@ export default function ComplianceLedger() {
                     </div>
                     <div>
                         <h2 className="text-sm font-bold uppercase tracking-widest text-[#F8FAFC]">Data Compliance Ledger</h2>
-                        <p className="text-xs text-gray-400">SOC2 & GDPR Audit Trail</p>
+                        <p className="text-xs text-gray-400">SOC2 & GDPR Audit Trail — Cryptographically Deduplicated</p>
                     </div>
                 </div>
             </div>
@@ -55,20 +64,24 @@ export default function ComplianceLedger() {
                             <tr>
                                 <th className="px-4 py-3 font-semibold uppercase tracking-wider text-xs">Timestamp</th>
                                 <th className="px-4 py-3 font-semibold uppercase tracking-wider text-xs">Target Account</th>
+                                <th className="px-4 py-3 font-semibold uppercase tracking-wider text-xs">Signal Headline</th>
                                 <th className="px-4 py-3 font-semibold uppercase tracking-wider text-xs">Ingestion Source</th>
                                 <th className="px-4 py-3 font-semibold uppercase tracking-wider text-xs">Cryptographic Hash (SHA-256)</th>
                             </tr>
                         </thead>
                         <tbody>
                             {isLoading ? (
-                                <tr><td colSpan={4} className="text-center py-8"><Loader2 className="animate-spin inline-block text-gray-400" /></td></tr>
+                                <tr><td colSpan={5} className="text-center py-8"><Loader2 className="animate-spin inline-block text-gray-400" /></td></tr>
                             ) : logs.length === 0 ? (
-                                <tr><td colSpan={4} className="text-center py-8 text-gray-500">No data ingested yet.</td></tr>
+                                <tr><td colSpan={5} className="text-center py-8 text-gray-500">No data ingested yet.</td></tr>
                             ) : (
                                 logs.map((log) => (
                                     <tr key={log.id} className="border-b border-[#CA9C68]/10 hover:bg-[#0C1519]/50">
                                         <td className="px-4 py-3 text-gray-300">{new Date(log.created_at).toLocaleString()}</td>
                                         <td className="px-4 py-3 font-medium text-white">{log.company_name}</td>
+                                        <td className="px-4 py-3 text-gray-300 max-w-xs truncate" title={log.title || ""}>
+                                            {log.title || "—"}
+                                        </td>
                                         <td className="px-4 py-3 text-emerald-400 font-mono text-xs">{log.source}</td>
                                         <td className="px-4 py-3 text-gray-500 font-mono text-xs flex items-center gap-2">
                                             <Key size={12} /> {log.dedup_hash}

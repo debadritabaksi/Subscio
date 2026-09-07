@@ -88,9 +88,10 @@ async def register(user_data: UserRegister, background_tasks: BackgroundTasks, d
     from app.tasks import execute_sequential_pipeline_loop
     
     # Helper for background backfill
-    async def _run_backfill_background(org_id: str, targets_data: list):
+    async def _run_backfill_background(org_id: str, targets_data: list, seller_company: str = "", seller_products: str = ""):
         from app.database import _get_session_factory
         from app.services.harvester import fetch_historical_backfill
+        from app.tasks import execute_sequential_pipeline_loop
         factory = _get_session_factory()
         if not factory: return
         async with factory() as session:
@@ -98,20 +99,33 @@ async def register(user_data: UserRegister, background_tasks: BackgroundTasks, d
                 company_name = target_data.get("company_name", "Unknown Target")
                 search_terms = target_data.get("search_terms", "")
                 try:
-                    await fetch_historical_backfill(session, org_id, company_name, search_terms)
+                    await fetch_historical_backfill(
+                        session=session,
+                        org_id=org_id,
+                        company_name=company_name,
+                        search_terms=search_terms,
+                        seller_company=seller_company,
+                        seller_products=seller_products
+                    )
                     await session.commit()
                 except Exception as e:
                     await session.rollback()
                     print(f"Background backfill error: {e}")
+        # Run pipeline loop to score any newly backfilled signals
+        try:
+            await execute_sequential_pipeline_loop(org_id)
+        except Exception as e:
+            print(f"Post-backfill pipeline loop error: {e}")
     
     ai = get_ai_service()
     try:
-        # Call async generate_targets with only companyUrl
-        targets = await ai.generate_targets(user_data.companyUrl)
+        # Call async generate_targets with seller company and description
+        targets = await ai.generate_targets(
+            company_url=user_data.companyUrl,
+            company_name=user_data.company,
+            company_description=user_data.companyDescription
+        )
         print(f"Generated targets during registration: {targets}")
-        
-        # NEW: Import the backfill engine
-        from app.services.harvester import fetch_historical_backfill
         
         for target_data in targets:
             company_name = target_data.get("company_name", "Unknown Target")
@@ -131,10 +145,16 @@ async def register(user_data: UserRegister, background_tasks: BackgroundTasks, d
         await db.commit()
         
         # Trigger background backfill for Day-Zero
-        background_tasks.add_task(_run_backfill_background, str(tenant.id), targets)
+        background_tasks.add_task(
+            _run_backfill_background,
+            str(tenant.id),
+            targets,
+            user_data.company,
+            user_data.companyDescription
+        )
         
         # Trigger the downstream pipeline via FastAPI BackgroundTasks
-        background_tasks.add_task(execute_sequential_pipeline_loop)
+        background_tasks.add_task(execute_sequential_pipeline_loop, str(tenant.id))
     except Exception as e:
         print(f"Failed to generate targets during registration: {e}")
     

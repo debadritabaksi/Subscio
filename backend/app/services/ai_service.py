@@ -72,11 +72,11 @@ class AIService(ABC):
     """Abstract base class for all AI service implementations."""
 
     @abstractmethod
-    async def analyze_intent(self, text: str) -> dict:
+    async def analyze_intent(self, text: str, seller_company_name: str = "", seller_product_summary: str = "") -> dict:
         pass
 
     @abstractmethod
-    async def generate_pitch(self, context: str) -> str:
+    async def generate_pitch(self, context: str, seller_company_name: str = "", seller_product_summary: str = "", signal_type: str = "OTHER") -> str:
         pass
 
     @abstractmethod
@@ -88,7 +88,7 @@ class AIService(ABC):
         pass
 
     @abstractmethod
-    async def generate_targets(self, company_url: str) -> list[str]:
+    async def generate_targets(self, company_url: str, company_name: str = "", company_description: str = "") -> list[dict]:
         pass
 
     @abstractmethod
@@ -148,13 +148,10 @@ class GeminiProductionService(AIService):
             
         return text
 
-    async def _call_groq_async(self, prompt: str) -> str:
+    async def _call_groq_text_async(self, prompt: str, system_prompt: str = "") -> str:
         groq_key = getattr(self.settings, "GROQ_API_KEY", None) or os.getenv("GROQ_API_KEY") or os.environ.get("GROQ_API_KEY", "").strip()
         if not groq_key:
-            logger.error("No GROQ_API_KEY set, failover failed.")
             return ""
-        
-        logger.info("[AI Service] Groq fallback active with model openai/gpt-oss-20b.")
         
         url = "https://api.groq.com/openai/v1/chat/completions"
         headers = {
@@ -162,28 +159,59 @@ class GeminiProductionService(AIService):
             "Content-Type": "application/json"
         }
         
-        payload = {
-            "model": "openai/gpt-oss-20b",
-            "messages": [
-                {"role": "system", "content": "You must output strictly valid JSON."},
-                {"role": "user", "content": prompt}
-            ],
-            "temperature": 0.2,
-            "response_format": {"type": "json_object"}
+        for model in ["openai/gpt-oss-120b", "openai/gpt-oss-20b"]:
+            payload = {
+                "model": model,
+                "messages": [
+                    {"role": "system", "content": system_prompt or "You are an elite B2B executive communications director and warm relationship specialist."},
+                    {"role": "user", "content": prompt}
+                ],
+                "temperature": 0.7,
+            }
+            
+            async with httpx.AsyncClient(timeout=20.0) as client:
+                try:
+                    res = await client.post(url, json=payload, headers=headers)
+                    if res.status_code == 200:
+                        data = res.json()
+                        return data["choices"][0]["message"]["content"].strip()
+                    logger.warning(f"Groq text API error {res.status_code} on {model}: {res.text}")
+                except Exception as e:
+                    logger.warning(f"Groq text request failed on {model}: {e}")
+        return ""
+
+    async def _call_groq_async(self, prompt: str) -> str:
+        groq_key = getattr(self.settings, "GROQ_API_KEY", None) or os.getenv("GROQ_API_KEY") or os.environ.get("GROQ_API_KEY", "").strip()
+        if not groq_key:
+            logger.error("No GROQ_API_KEY set, failover failed.")
+            return ""
+        
+        url = "https://api.groq.com/openai/v1/chat/completions"
+        headers = {
+            "Authorization": f"Bearer {groq_key}",
+            "Content-Type": "application/json"
         }
         
-        async with httpx.AsyncClient(timeout=15.0) as client:
-            try:
-                res = await client.post(url, json=payload, headers=headers)
-                if res.status_code != 200:
-                    logger.error(f"Groq API Error {res.status_code}: {res.text}")
-                    return ""
-                res.raise_for_status()
-                text = res.json()["choices"][0]["message"]["content"]
-                return text
-            except Exception as e:
-                logger.error(f"Groq fallback request failed: {e}")
-                return ""
+        for model in ["openai/gpt-oss-120b", "openai/gpt-oss-20b"]:
+            payload = {
+                "model": model,
+                "messages": [
+                    {"role": "system", "content": "You must output strictly valid JSON."},
+                    {"role": "user", "content": prompt}
+                ],
+                "temperature": 0.2,
+                "response_format": {"type": "json_object"}
+            }
+            
+            async with httpx.AsyncClient(timeout=20.0) as client:
+                try:
+                    res = await client.post(url, json=payload, headers=headers)
+                    if res.status_code == 200:
+                        return res.json()["choices"][0]["message"]["content"]
+                    logger.error(f"Groq API Error {res.status_code} on {model}: {res.text}")
+                except Exception as e:
+                    logger.error(f"Groq fallback request failed on {model}: {e}")
+        return ""
 
     async def _call_ai_with_failover(self, prompt: str, response_mime_type: str = "text/plain") -> str:
         current_key = next(self.key_pool)
@@ -260,6 +288,7 @@ class GeminiProductionService(AIService):
             "- 'awareness': For general expansion, office openings, press releases, tech stack changes, or ANY executive hire / board restructuring / leadership appointment with NO mention of procurement or vendor evaluation.\n"
             "- 'targeting': For any signal that merely fits an ICP profile but shows no active buying intent.\n"
             "CRITICAL: If the news is strictly about a CEO appointment, CXO hire, or board restructuring with NO mention of procurement, vendor evaluation, or budget expansion, classify as 'awareness' — NEVER as 'purchase_ready' or 'consideration'.\n"
+            "Heuristic exclusions: if the company is clearly in mining, petroleum, heavy industrial manufacturing, pharmaceuticals, shipping, coal, or other non-B2B-buyer contexts, prefer 'awareness' unless the signal explicitly states procurement intent.\n"
             f"Signal text: {text}"
         )
         
@@ -311,28 +340,82 @@ class GeminiProductionService(AIService):
         if signal_type == "ACTIVE_TENDER":
             framing_instructions = (
                 "FRAME AS TENDER BID / VENDOR EMPANELMENT:\n"
-                "Draft a formal expression of interest referencing the active tender requirements. "
-                "Highlight our catalog depth, compliance, and rapid delivery timelines as an enterprise vendor.\n"
+                "Acknowledge the active tender/procurement requirement with enthusiasm and clarity. "
+                "Highlight our catalog depth, enterprise compliance, and rapid turnaround as a preferred vendor partner.\n"
             )
         elif signal_type == "FUNDING_ROUND":
             framing_instructions = (
                 "FRAME AS EXECUTIVE CONGRATULATORY OUTREACH:\n"
-                "Acknowledge the recent funding round and team expansion. "
-                "Position our products as the perfect solution for bulk onboarding welcome kits, milestone rewards, and team scaling.\n"
+                "Warmly congratulate them on the recent funding round and team expansion. "
+                "Position our products as the natural solution for bulk employee onboarding kits, milestone rewards, and team scaling.\n"
+            )
+        else:
+            framing_instructions = (
+                "FRAME AS THOUGHTFUL PARTNERSHIP INVITATION:\n"
+                "Reference their current business expansion and growth trajectory with genuine appreciation. "
+                "Highlight how partnering together makes their upcoming growth smoother.\n"
             )
             
-        prompt = (
-            "You are a master B2B sales copywriter (the 'Corsair' agent).\n"
+        stage1_prompt = (
+            "You are an expert enterprise business development strategist.\n"
             f"{seller_info}"
             f"{framing_instructions}"
-            f"Based on this contextual signal:\n{context}\n\n"
-            "Draft a highly targeted, 3-sentence plain text email pitch. "
-            "Do not include subject lines or placeholders like [Name]. Just the body. "
-            "Keep it sharp, value-driven, and end with a soft call to action."
+            f"Contextual Signal:\n{context}\n\n"
+            "Draft the foundational B2B outreach pitch (3 concise sentences).\n"
+            "Connect the buyer's recent milestone/need directly to the seller's solution."
         )
-        return await self._call_ai_with_failover(
-            prompt=prompt
+
+        initial_draft = await self._call_ai_with_failover(prompt=stage1_prompt)
+
+        # Stage 2: Warmth Reframing via Secondary AI (Groq with OpenAI 120B/20B)
+        reframing_system = (
+            "You are an elite B2B executive communications director and warm relationship specialist. "
+            "Your mission is to take outreach drafts and reframe them to sound remarkably warm, authentic, human, and conversational—never robotic or template-like."
         )
+        reframing_prompt = (
+            f"Here is an initial business outreach draft:\n\n{initial_draft}\n\n"
+            f"Seller: {seller_company_name or 'Our team'} ({seller_product_summary or 'enterprise solutions'})\n"
+            f"Trigger Context: {context}\n\n"
+            "TASK: Reframe and elevate this draft into a genuinely warm, human-to-human executive note.\n"
+            "WARMTH & TONE GUIDELINES:\n"
+            "1. Open with genuine warmth congratulating or acknowledging their milestone/news.\n"
+            "2. Smoothly and conversationally connect how we help growing teams without sounding pushy or robotic.\n"
+            "3. Close with a friendly, low-pressure invitation to connect whenever convenient.\n"
+            "4. Keep it concise (3-4 flowing sentences max).\n"
+            "5. Strictly do NOT include subject lines, bracketed placeholders like [Name] or [Company], bullet points, or JSON. Return only the final warm email text."
+        )
+
+        refined_pitch = await self._call_groq_text_async(reframing_prompt, reframing_system)
+        if not refined_pitch or len(refined_pitch.strip()) < 20:
+            # Secondary pass with failover
+            refined_pitch = await self._call_ai_with_failover(
+                prompt=f"{reframing_system}\n\n{reframing_prompt}"
+            )
+
+        final_pitch = (refined_pitch or initial_draft or "").strip()
+        
+        # Unwrap any JSON encapsulation if model returned JSON
+        if final_pitch.startswith("{") and "}" in final_pitch:
+            try:
+                import json
+                parsed = json.loads(final_pitch)
+                for val in parsed.values():
+                    if isinstance(val, str) and len(val) > 20:
+                        final_pitch = val.strip()
+                        break
+            except Exception:
+                pass
+                
+        # Clean out any stray markdown code blocks or quotes
+        if final_pitch.startswith("```"):
+            lines = final_pitch.splitlines()
+            if lines and lines[0].startswith("```"):
+                lines = lines[1:]
+            if lines and lines[-1].startswith("```"):
+                lines = lines[:-1]
+            final_pitch = "\n".join(lines).strip()
+
+        return final_pitch
 
     async def classify_signals(self, signals: list[dict]) -> list[dict]:
         results = []
@@ -342,13 +425,29 @@ class GeminiProductionService(AIService):
         return results
 
     async def extract_entity_and_profile(self, signal_title: str, signal_summary: str, seller_products: str) -> dict:
+        combined = f"{signal_title} {signal_summary}".lower()
+        hard_negatives = [
+            "death", "died", "dies", "dead", "killing", "killed", "murder", "accident", "crash",
+            "tuberculosis", "cancer", "disease", "obituary", "funeral", "tragedy", "arrest",
+            "fraud", "scam", "jail", "police", "suicide"
+        ]
+        if any(neg in combined for neg in hard_negatives):
+            return {
+                "company_name": "Unknown Entity",
+                "industry": "Irrelevant",
+                "signal_type": "OTHER",
+                "purchase_intent_rationale": "Filtered: personal tragedy, crime, or negative news.",
+                "b2b_fit": False
+            }
+
         prompt = (
             "Analyze the provided business news item/tender notice. Extract:\n"
             "1. company_name: The primary company raising capital, issuing the tender, or expanding.\n"
             "2. industry: The primary industry of the target company.\n"
             "3. signal_type: Classify as 'FUNDING_ROUND', 'ACTIVE_TENDER', 'EXPANSION', or 'OTHER'.\n"
-            f"4. purchase_intent_rationale: Explain how this event creates direct demand for {seller_products}.\n\n"
-            "Return STRICT JSON: {\"company_name\": \"str\", \"industry\": \"str\", \"signal_type\": \"str\", \"purchase_intent_rationale\": \"str\"}\n\n"
+            f"4. purchase_intent_rationale: Explain how this event creates direct demand for {seller_products}.\n"
+            f"5. b2b_fit: boolean. Evaluate if the company fits an actual B2B buyer profile for the seller's products (seller offerings: {seller_products}). Return true if there is a logical commercial fit, false if they are mining, heavy industrial, personal tragedy/death/obituary, crime, bankrupt, or completely irrelevant entity.\n\n"
+            "Return STRICT JSON: {\"company_name\": \"str\", \"industry\": \"str\", \"signal_type\": \"str\", \"purchase_intent_rationale\": \"str\", \"b2b_fit\": true}\n\n"
             f"News Title: {signal_title}\n"
             f"News Summary: {signal_summary}"
         )
@@ -365,31 +464,41 @@ class GeminiProductionService(AIService):
                 "company_name": "Unknown Entity",
                 "industry": "Unknown",
                 "signal_type": "OTHER",
-                "purchase_intent_rationale": "Extraction failed."
+                "purchase_intent_rationale": "Extraction failed.",
+                "b2b_fit": False
             }
 
-    async def generate_targets(self, company_url: str) -> list[dict]:
+    async def generate_targets(self, company_url: str, company_name: str = "", company_description: str = "") -> list[dict]:
         scraped_text = await fetch_website_context(company_url)
         
+        seller_context_parts = []
+        if company_name:
+            seller_context_parts.append(f"Seller Company Name: {company_name}")
+        if company_description:
+            seller_context_parts.append(f"Seller Product / Solution Description: {company_description}")
+        seller_context_str = "\n".join(seller_context_parts)
+
         prompt = (
             "You are an elite B2B Sales Strategist and Market Intent Expert.\n"
+            f"{seller_context_str}\n"
             f"User Company URL: {company_url}\n"
-            f"Scraped Context: {scraped_text}\n\n"
-            "Generate 5 target B2B buyer companies for the seller. Because we are scraping public news, target companies must be:\n"
-            "1. High-growth startups likely to have recently raised funding.\n"
-            "2. Large enterprises known for massive hiring drives.\n"
-            "3. Corporate rewards/loyalty aggregators (e.g., Zaggle, Xoxoday).\n\n"
+            f"Scraped Context from website: {scraped_text}\n\n"
+            "Generate 5 target B2B buyer companies that would realistically buy the seller's specific products or services.\n"
+            "DO NOT default to generic corporate gifting companies unless the seller is strictly a gifting business.\n"
+            "For example: if the seller builds developer tools, choose tech companies; if cloud/SaaS, choose mid-market/enterprise software users; if logistics, choose e-commerce brands.\n"
+            "Accounts must be real companies with active, searchable commercial buying signals.\n\n"
             "Output Requirements:\n"
             "1. Generate exactly 5 target buyer accounts.\n"
             "2. Ensure the parser returns structured dicts with real, distinct company names for `company_name`.\n"
-            "3. For the `search_terms` field, output strict news-friendly growth queries, such as: `(\"funding\" OR \"raises\" OR \"hiring\" OR \"expansion\" OR \"milestone\" OR \"anniversary\")`.\n"
-            "4. Return strictly valid JSON array of objects. Do not include markdown formatting.\n"
-            "Example:\n"
+            "3. For `industry`, provide the buyer's industry.\n"
+            "4. For `search_terms`, output strict news-friendly query terms tuned to commercial triggers (e.g. '(funding OR raises OR expansion OR procurement OR hiring)').\n"
+            "5. Return strictly valid JSON array of objects. Do not include markdown formatting.\n"
+            "Example format:\n"
             "[\n"
             "  {\n"
-            '    "company_name": "Zaggle",\n'
-            '    "industry": "Corporate Rewards",\n'
-            '    "search_terms": "(\\"funding\\" OR \\"raises\\" OR \\"hiring\\" OR \\"expansion\\")"\n'
+            '    "company_name": "Company Name",\n'
+            '    "industry": "Enterprise Software",\n'
+            '    "search_terms": "(funding OR expansion OR procurement)"\n'
             "  }\n"
             "]\n"
         )
@@ -408,11 +517,12 @@ class GeminiProductionService(AIService):
             raise ValueError("Invalid array format")
         except Exception as e:
             logger.error(f"Agent 1 Fatal Crash: {str(e)}", exc_info=True)
+            fallback_industry = company_description[:30] if company_description else "B2B Enterprise"
             return [
                 {
-                    "company_name": "Generic Target",
-                    "industry": "Corporate Gifting",
-                    "search_terms": "corporate gifting OR bulk procurement"
+                    "company_name": f"{company_name} Target 1" if company_name else "Target Enterprise",
+                    "industry": fallback_industry,
+                    "search_terms": "(funding OR expansion OR procurement)"
                 }
             ]
 

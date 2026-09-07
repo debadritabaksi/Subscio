@@ -18,7 +18,7 @@ async def get_analytics_summary(db: AsyncSession = Depends(get_db)):
     """
     # High-performance Funnel Conversion Grouping
     stage_counts_result = await db.execute(
-        select(LeadORM.intent_stage, func.count(LeadORM.id)).group_by(LeadORM.intent_stage)
+        select(func.lower(LeadORM.intent_stage), func.count(LeadORM.id)).group_by(func.lower(LeadORM.intent_stage))
     )
     stage_counts = dict(stage_counts_result.all())
     
@@ -56,20 +56,28 @@ async def get_analytics_summary(db: AsyncSession = Depends(get_db)):
     # Return static summary to prevent blocking Gemini calls on every page load
     executive_summary = "Pipeline is active. See funnel distribution for current status."
     
+    seen_lead_titles = set()
+    deduped_pipeline = []
+    for l in leads:
+        norm_t = (l.title or "").strip().lower()
+        if norm_t and norm_t in seen_lead_titles:
+            continue
+        if norm_t:
+            seen_lead_titles.add(norm_t)
+        deduped_pipeline.append({
+            "id": l.id,
+            "company_name": l.company_name,
+            "title": l.title,
+            "intent_stage": l.intent_stage,
+            "quality_score": l.quality_score,
+            "pitch_draft": l.pitch_draft,
+            "corsair_status": l.corsair_status,
+            "created_at": l.created_at.isoformat()
+        })
+    
     return {
         "funnel_distribution": data_context["funnel_distribution"],
         "executive_summary": executive_summary,
-        "pipeline": [
-            {
-                "id": l.id,
-                "company_name": l.company_name,
-                "title": l.title,
-                "intent_stage": l.intent_stage,
-                "quality_score": l.quality_score,
-                "pitch_draft": l.pitch_draft,
-                "corsair_status": l.corsair_status,
-                "created_at": l.created_at.isoformat()
-            } for l in leads
-        ],
+        "pipeline": deduped_pipeline,
         "total_signals_harvested": total_signals
     }

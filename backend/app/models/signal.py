@@ -58,6 +58,7 @@ class SignalORM(Base):
     dedup_hash: Mapped[str] = mapped_column(String(64), unique=True, nullable=False)
     raw_payload: Mapped[str] = mapped_column(Text, nullable=True)
     intent_score: Mapped[int] = mapped_column(Integer, nullable=True)
+    intent_stage: Mapped[str] = mapped_column(String(50), default="targeting")
     status: Mapped[str] = mapped_column(String(50), default="un_analyzed")
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), default=lambda: datetime.now(timezone.utc)
@@ -106,6 +107,7 @@ class SignalResponse(BaseModel):
     company_name: str | None
     dedup_hash: str
     intent_score: int | None
+    intent_stage: str
     created_at: datetime
 
     model_config = {"from_attributes": True}
