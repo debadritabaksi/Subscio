@@ -35,6 +35,7 @@ interface TeamMember {
   role: string;
   badge: string;
   photoUrl: string;
+  description: string;
   socials: {
     linkedin: string;
     github: string;
@@ -42,20 +43,14 @@ interface TeamMember {
   };
 }
 
-/**
- * CONFIGURATION:
- * 1. Place photos in `frontend/public/team/`:
- *    - `frontend/public/team/divadrita.jpg`
- *    - `frontend/public/team/devjith.jpg`
- * 2. Update names, roles, and social URLs below.
- */
 const TEAM_MEMBERS: TeamMember[] = [
   {
     id: "member-1",
     name: "Debadrita Baksi",
-    role: "Lead Full-Stack & AI Systems Architect",
-    badge: "Core Architect",
-    photoUrl: "/team/divadrita.jpg",
+    role: "Founder, Lead AI/Systems Architect & Full Stack Developer",
+    badge: "FOUNDER",
+    photoUrl: "/debadrita.jpg",
+    description: "Architected the core AI intelligence engine, multi-agent pipeline, and deterministic LLM prompt logic to power real-time signal ingestion. Contributed across the full stack to seamlessly integrate these AI models into a production-ready application.",
     socials: {
       linkedin: "https://linkedin.com/in/debadrita-baksi",
       github: "https://github.com/debadritabaksi",
@@ -65,9 +60,10 @@ const TEAM_MEMBERS: TeamMember[] = [
   {
     id: "member-2",
     name: "Debjeet Mazumder",
-    role: "Core Systems & Infrastructure Engineer",
-    badge: "Co-Developer",
-    photoUrl: "/team/devjith.jpg",
+    role: "Co-Founder & Head of Platform Engineering",
+    badge: "CO-FOUNDER",
+    photoUrl: "/debjeet.jpg",
+    description: "Led the platform's full-stack architecture, focusing on complex client-side state management, API reliability, and database schema integrity. Engineered the secure compliance ledger and real-time dashboard data flow to ensure an enterprise-grade user experience.",
     socials: {
       linkedin: "https://linkedin.com/in/debjeet-mazumder",
       github: "https://github.com/debjeetmazumder",
@@ -77,18 +73,13 @@ const TEAM_MEMBERS: TeamMember[] = [
 ];
 
 export default function FoundersRegistry() {
-  return (
-    <section className="relative w-full overflow-hidden py-24 bg-[#0C1519]">
-      {/* Background Mesh Lighting */}
-      <div className="absolute inset-0 z-0 pointer-events-none">
-        <div className="absolute top-1/2 left-1/4 -translate-y-1/2 w-[500px] h-[500px] bg-[#CA9C68]/10 rounded-full blur-[140px]" />
-        <div className="absolute top-1/2 right-1/4 -translate-y-1/2 w-[500px] h-[500px] bg-[#E8B546]/10 rounded-full blur-[140px]" />
-        <div className="absolute inset-0 bg-gradient-to-b from-[#0C1519] via-transparent to-[#0C1519]" />
-      </div>
+  const [isLocked, setIsLocked] = useState(false);
 
+  return (
+    <section className="relative w-full overflow-hidden py-24 bg-transparent border-b border-white/10">
       <div className="relative z-10 px-8 max-w-6xl mx-auto">
         {/* Section Header */}
-        <div className="flex flex-col md:flex-row justify-between items-start md:items-end mb-16 border-b border-[#CA9C68]/20 pb-8 gap-4">
+        <div className="flex flex-col md:flex-row justify-between items-start md:items-end mb-16 border-b border-white/10 pb-8 gap-4">
           <div>
             <div className="flex items-center gap-2 mb-2">
               <Sparkles size={16} className="text-[#E8B546]" />
@@ -100,146 +91,205 @@ export default function FoundersRegistry() {
               The Minds Behind Subscio.
             </h2>
             <p className="text-gray-400 text-base md:text-lg mt-2 italic max-w-2xl font-sans">
-              &ldquo;Architected at the intersection of autonomous agents and real-time market intent — engineered to turn chaotic enterprise signals into deterministic revenue pipeline.&rdquo;
+              &ldquo;Architected at the intersection of autonomous agents and real-time market intent engineered to turn chaotic enterprise signals into deterministic revenue pipeline.&rdquo;
             </p>
           </div>
-          <div className="flex items-center gap-2 text-xs font-mono text-gray-500 uppercase tracking-widest bg-[#162127]/60 px-3 py-1.5 rounded-full border border-[#CA9C68]/20">
-            <RotateCw size={12} className="text-[#CA9C68] animate-spin" style={{ animationDuration: '6s' }} />
-            <span>Hover card to reveal portrait</span>
+          <div className="flex items-center gap-2 text-xs font-mono text-[#F5D061]/90 uppercase tracking-widest bg-slate-950/40 backdrop-blur-xl px-4 py-2 rounded-full border border-white/10 shadow-sm">
+            <RotateCw size={13} className="text-[#E8B546] animate-spin" style={{ animationDuration: "8s" }} />
+            <span>Synchronized Dual Dossier</span>
           </div>
         </div>
 
-        {/* Two Flippable Member Cards */}
-        <div className="grid md:grid-cols-2 gap-8 max-w-4xl mx-auto">
-          {TEAM_MEMBERS.map((member) => (
-            <FlippableMemberCard key={member.id} member={member} />
-          ))}
+        {/* Shared Parent Container with group, perspective, Dynamic Proximity Spotlight, and Softly Pulsing Golden Aura */}
+        <div 
+          className="group relative max-w-4xl mx-auto cursor-pointer select-none"
+          style={{ perspective: "1000px" }}
+          onClick={() => setIsLocked(prev => !prev)}
+          onMouseMove={(event) => {
+            const rect = event.currentTarget.getBoundingClientRect();
+            const x = event.clientX - rect.left;
+            const y = event.clientY - rect.top;
+            event.currentTarget.style.setProperty("--mouse-x", `${x}px`);
+            event.currentTarget.style.setProperty("--mouse-y", `${y}px`);
+          }}
+        >
+          {/* Dynamic Proximity Golden Spotlight Layer */}
+          <div
+            className="absolute -inset-24 pointer-events-none transition-opacity duration-700"
+            style={{
+              background: `radial-gradient(550px circle at var(--mouse-x, 50%) var(--mouse-y, 50%), rgba(245,158,11,0.18), transparent 60%)`,
+            }}
+          />
+
+          {/* Softly pulsing golden aura behind cards */}
+          <div className="absolute -inset-12 bg-[#D4AF37]/20 blur-3xl rounded-full pointer-events-none animate-pulse" />
+
+          {/* Dual-Card Grid */}
+          <div className="relative z-10 grid md:grid-cols-2 gap-8">
+            {TEAM_MEMBERS.map((member) => (
+              <FlippableMemberCard 
+                key={member.id} 
+                member={member} 
+                isSynchronizedFlipped={isLocked}
+              />
+            ))}
+          </div>
         </div>
       </div>
     </section>
   );
 }
 
-function FlippableMemberCard({ member }: { member: TeamMember }) {
-  const [imgError, setImgError] = useState(false);
-
+function FlippableMemberCard({ 
+  member, 
+  isSynchronizedFlipped 
+}: { 
+  member: TeamMember; 
+  isSynchronizedFlipped: boolean;
+}) {
   return (
-    <div className="group h-[500px] w-full perspective-1000">
+    <div className="h-[570px] w-full">
       {/* 3D Inner Card Container */}
-      <div className="relative w-full h-full rounded-2xl transition-transform duration-700 transform-style-3d group-hover:rotate-y-180 shadow-2xl">
+      <div
+        className="relative w-full h-full rounded-2xl shadow-2xl transition-transform duration-1000 ease-[cubic-bezier(0.25,1,0.5,1)] transform-style-3d"
+        style={{
+          transformStyle: "preserve-3d",
+          WebkitTransformStyle: "preserve-3d",
+          transform: isSynchronizedFlipped ? "rotateY(180deg)" : undefined,
+        }}
+      >
+        {/* ── FRONT FACE: Luxury Playing Card Aesthetic ──────────── */}          <div className="absolute inset-0 w-full h-full rounded-2xl bg-slate-950/40 backdrop-blur-xl border border-white/10 shadow-[0_8px_32px_0_rgba(0,0,0,0.37)] p-8 flex flex-col justify-between group-hover:border-white/20 transition-colors overflow-hidden"
+          style={{
+            backfaceVisibility: "hidden",
+            WebkitBackfaceVisibility: "hidden",
+            transform: "rotateY(0deg)",
+          }}
+        >
+          {/* Subscio Signal-Routing Matrix Pattern with opacity-15 */}
+          <svg className="absolute inset-0 w-full h-full opacity-[0.15]" aria-hidden="true">
+            <defs>
+              <pattern id={`matrix-${member.id}`} x="0" y="0" width="32" height="32" patternUnits="userSpaceOnUse">
+                <path d="M16 0 L32 16 L16 32 L0 16 Z" fill="none" stroke="#E8B546" strokeWidth="0.75" />
+                <circle cx="16" cy="16" r="1.5" fill="#E8B546" />
+                <circle cx="0" cy="0" r="1" fill="#CA9C68" />
+                <circle cx="32" cy="0" r="1" fill="#CA9C68" />
+                <circle cx="0" cy="32" r="1" fill="#CA9C68" />
+                <circle cx="32" cy="32" r="1" fill="#CA9C68" />
+              </pattern>
+            </defs>
+            <rect width="100%" height="100%" fill={`url(#matrix-${member.id})`} />
+          </svg>
+          {/* Ornamental Inner Border */}
+          <div className="absolute inset-3 rounded-xl border border-white/10 pointer-events-none" />
 
-        {/* ── FRONT FACE: Name & Flip Hint Only (No Links) ───────── */}
-        <div className="absolute inset-0 w-full h-full rounded-2xl bg-[#162127]/90 backdrop-blur-xl border border-[#CA9C68]/30 p-8 flex flex-col justify-between backface-hidden shadow-[inset_0_1px_1px_rgba(255,255,255,0.08),0_20px_40px_-10px_rgba(0,0,0,0.6)] group-hover:border-[#E8B546]/80 transition-colors">
+          {/* Top Row: Standardized Badge (FOUNDER / CO-FOUNDER) */}
+          <div className="relative z-10 flex justify-between items-center">
+            <span className="text-[11px] font-mono font-bold tracking-[0.25em] text-[#F5D061]/90 bg-[#D4AF37]/10 border border-[#D4AF37]/30 px-3.5 py-1 rounded-full uppercase shadow-sm">
+              {member.badge}
+            </span>
+            <span className="text-[10px] font-mono text-pearl/60 uppercase tracking-widest flex items-center gap-1.5">
+              <RotateCw size={11} className="text-[#E8B546]/80" /> {isSynchronizedFlipped ? 'Click to Unlock' : 'Click to Lock Dossier'}
+            </span>
+          </div>
 
-          {/* Top Row: Badge & Flip Hint */}
-          <div>
-            <div className="flex items-center justify-between mb-8">
-              <span className="text-[10px] font-mono font-bold tracking-[0.2em] text-[#E8B546] bg-[#CA9C68]/15 border border-[#CA9C68]/30 px-3 py-1 rounded-full uppercase">
-                {member.badge}
-              </span>
-              <div className="flex items-center gap-1 text-[11px] font-mono text-gray-400 group-hover:text-[#E8B546] transition-colors">
-                <RotateCw size={12} />
-                <span className="uppercase tracking-wider">Hover to flip</span>
-              </div>
-            </div>
-
-            {/* Name Only */}
-            <h3 className="text-3xl md:text-4xl font-bold text-[#F8FAFC] tracking-tight">
+          {/* Center Name: Clean & Bold */}
+          <div className="relative z-10 text-center my-auto py-6">
+            <h3 className="text-3xl md:text-4xl font-bold text-pearl tracking-tight mb-2">
               {member.name}
             </h3>
+            <p className="text-xs font-mono text-[#E8B546]/80 uppercase tracking-[0.25em]">
+              {member.badge === "FOUNDER" ? "Chief Executive & Architect" : "Head of Platform Engineering"}
+            </p>
           </div>
 
-          {/* Bottom Row: Hover Prompt */}
-          <div className="pt-6 border-t border-[#CA9C68]/20">
-            <div className="flex items-start gap-3 p-4 rounded-xl bg-[#0C1519]/80 border border-dashed border-[#CA9C68]/30">
-              <RotateCw size={16} className="text-[#CA9C68] shrink-0 mt-0.5 animate-spin" style={{ animationDuration: '6s' }} />
-              <p className="text-xs text-gray-300 leading-relaxed font-sans">
-                Hover to reveal who engineered the backend — and everything else behind Subscio.
-              </p>
+          {/* Bottom Row: Interaction Cue */}
+          <div className="relative z-10 pt-4 border-t border-white/10 flex items-center justify-center gap-2 text-xs font-mono text-[#F5D061]/80 uppercase tracking-widest">
+            <RotateCw size={13} className="text-[#E8B546]/80 animate-spin" style={{ animationDuration: "8s" }} />
+            <span>Synchronized Dual-Flip Active</span>
+          </div>
+        </div>
+
+        {/* ── BACK FACE: Revealed Dossier ─────────────────────────── */}
+        <div
+          className="absolute inset-0 w-full h-full rounded-2xl bg-slate-950/40 backdrop-blur-xl border border-white/10 shadow-[0_8px_32px_0_rgba(0,0,0,0.37)] p-6 flex flex-col justify-between overflow-hidden"
+          style={{
+            backfaceVisibility: "hidden",
+            WebkitBackfaceVisibility: "hidden",
+            transform: "rotateY(180deg)",
+          }}
+        >
+          {/* Subscio Signal-Routing Matrix Pattern */}
+          <svg className="absolute inset-0 w-full h-full opacity-[0.08] pointer-events-none" aria-hidden="true">
+            <use href={`#matrix-${member.id}`} />
+          </svg>
+          {/* Top: Name & Social Icons */}
+          <div className="flex justify-between items-center shrink-0 z-10">
+            <div>
+              <span className="text-[9px] font-mono font-bold tracking-[0.2em] text-[#E8B546] uppercase block">
+                {member.badge}
+              </span>
+              <h4 className="text-xl font-bold text-pearl tracking-tight truncate">
+                {member.name}
+              </h4>
+            </div>
+
+            {/* Social Icon Links */}
+            <div className="flex items-center gap-2 shrink-0">
+              <a
+                href={member.socials.linkedin}
+                target="_blank"
+                rel="noopener noreferrer"
+                onClick={(e) => e.stopPropagation()}
+                title="LinkedIn"
+                className="w-8 h-8 rounded-full bg-slate-950/40 backdrop-blur-xl border border-white/10 flex items-center justify-center text-pearl/70 hover:text-[#F5D061]/90 hover:border-[#D4AF37]/50 hover:scale-110 transition-all cursor-pointer shadow-md"
+              >
+                <LinkedInIcon className="w-3.5 h-3.5" />
+              </a>
+              <a
+                href={member.socials.github}
+                target="_blank"
+                rel="noopener noreferrer"
+                onClick={(e) => e.stopPropagation()}
+                title="GitHub"
+                className="w-8 h-8 rounded-full bg-slate-950/40 backdrop-blur-xl border border-white/10 flex items-center justify-center text-pearl/70 hover:text-[#F5D061]/90 hover:border-[#D4AF37]/50 hover:scale-110 transition-all cursor-pointer shadow-md"
+              >
+                <GitHubIcon className="w-3.5 h-3.5" />
+              </a>
+              <a
+                href={member.socials.instagram}
+                target="_blank"
+                rel="noopener noreferrer"
+                onClick={(e) => e.stopPropagation()}
+                title="Instagram"
+                className="w-8 h-8 rounded-full bg-slate-950/40 backdrop-blur-xl border border-white/10 flex items-center justify-center text-pearl/70 hover:text-[#F5D061]/90 hover:border-[#D4AF37]/50 hover:scale-110 transition-all cursor-pointer shadow-md"
+              >
+                <InstagramIcon className="w-3.5 h-3.5" />
+              </a>
             </div>
           </div>
 
-        </div>
-
-        {/* ── BACK FACE: Portrait Photo, Role & Social Icons ─────── */}
-        <div className="absolute inset-0 w-full h-full rounded-2xl bg-[#0C1519] border-2 border-[#E8B546]/80 overflow-hidden rotate-y-180 backface-hidden shadow-[0_20px_45px_-10px_rgba(232,181,70,0.3)] flex flex-col justify-end">
-
-          {/* Photo Render with Graceful Fallback */}
-          {!imgError ? (
-            // eslint-disable-next-line @next/next/no-img-element
+          {/* Middle: Portrait Image - Full Frame Uncropped */}
+          <div className="relative w-full my-3 shrink-0">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
               src={member.photoUrl}
               alt={member.name}
-              onError={() => setImgError(true)}
-              className="absolute inset-0 w-full h-full object-cover object-center transition-transform duration-700 group-hover:scale-105"
+              loading="eager"
+              className="w-full h-56 object-cover object-top rounded-xl border border-[#D8B26E]/30 shadow-lg"
             />
-          ) : (
-            /* Fallback when photo file is not yet dropped into public/team */
-            <div className="absolute inset-0 w-full h-full bg-gradient-to-br from-[#162127] via-[#0C1519] to-[#162127] flex flex-col items-center justify-center p-8 text-center">
-              <div className="w-24 h-24 rounded-full border-2 border-[#E8B546]/60 bg-[#CA9C68]/10 flex items-center justify-center mb-4 shadow-[0_0_25px_rgba(232,181,70,0.2)]">
-                <User size={40} className="text-[#E8B546]" />
-              </div>
-              <span className="text-base font-bold text-[#F8FAFC] tracking-tight">{member.name}</span>
-              <div className="mt-4 px-3 py-2 rounded-md bg-[#0C1519]/90 border border-dashed border-[#CA9C68]/40 text-[11px] font-mono text-gray-400">
-                Place photo at: <span className="text-[#E8B546]">public{member.photoUrl}</span>
-              </div>
-            </div>
-          )}
-
-          {/* Gradient Overlay for Text Legibility */}
-          <div className="relative z-10 bg-gradient-to-t from-[#0C1519] via-[#0C1519]/80 to-transparent p-6 pt-20 flex flex-col justify-end">
-            <div className="flex items-end justify-between gap-4">
-              <div>
-                <span className="text-[10px] font-mono font-bold tracking-[0.2em] text-[#E8B546] uppercase block">
-                  {member.badge}
-                </span>
-                <h4 className="text-2xl font-bold text-[#F8FAFC] tracking-tight">
-                  {member.name}
-                </h4>
-                <p className="text-xs font-mono text-[#CA9C68] mt-1 leading-relaxed">
-                  {member.role}
-                </p>
-              </div>
-
-              {/* Social Icon Links (Symbols Only) */}
-              <div className="flex items-center gap-2 shrink-0">
-                <a
-                  href={member.socials.linkedin}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  onClick={(e) => e.stopPropagation()}
-                  title="LinkedIn"
-                  className="w-8 h-8 rounded-full bg-[#162127]/90 border border-[#CA9C68]/40 flex items-center justify-center text-gray-300 hover:text-[#CA9C68] hover:border-[#CA9C68] hover:scale-110 transition-all"
-                >
-                  <LinkedInIcon className="w-3.5 h-3.5" />
-                </a>
-                <a
-                  href={member.socials.github}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  onClick={(e) => e.stopPropagation()}
-                  title="GitHub"
-                  className="w-8 h-8 rounded-full bg-[#162127]/90 border border-[#CA9C68]/40 flex items-center justify-center text-gray-300 hover:text-[#CA9C68] hover:border-[#CA9C68] hover:scale-110 transition-all"
-                >
-                  <GitHubIcon className="w-3.5 h-3.5" />
-                </a>
-                <a
-                  href={member.socials.instagram}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  onClick={(e) => e.stopPropagation()}
-                  title="Instagram"
-                  className="w-8 h-8 rounded-full bg-[#162127]/90 border border-[#CA9C68]/40 flex items-center justify-center text-gray-300 hover:text-[#CA9C68] hover:border-[#CA9C68] hover:scale-110 transition-all"
-                >
-                  <InstagramIcon className="w-3.5 h-3.5" />
-                </a>
-              </div>
-            </div>
           </div>
 
+          {/* Bottom: Explicit Executive Title & Detailed Contribution */}
+          <div className="shrink-0 z-10 space-y-1">
+            <p className="text-[12px] font-bold text-[#F5D061]/90 leading-snug">
+              {member.role}
+            </p>
+            <p className="text-[11px] text-pearl/80 leading-relaxed font-sans line-clamp-4">
+              {member.description}
+            </p>
+          </div>
         </div>
-
       </div>
     </div>
   );
-}
+}

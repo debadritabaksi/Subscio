@@ -16,11 +16,16 @@
   --text-pearl: #F8FAFC; /* Headers */
   --text-stone: #94A3B8; /* Timestamps, logs, metadata */
   
-  /* Accents */
-  --accent-gold: #CA9C68; /* Primary CTA, active focus, 1px borders */
-  --accent-brass: #CF9D7B; 
+  /* Accents - True Metallic Champagne-Gold */
+  --accent-gold: #D8B26E; /* Primary Champagne Gold */
+  --accent-brass: #C99B4A; 
   --accent-cyan: #00F0FF; /* Live radar, high-intent */
   --accent-emerald: #10B981; /* Live badges */
+  
+  /* Metallic Gradient Definitions */
+  --gradient-text-gold: linear-gradient(180deg, #FFF1D0 0%, #D8B26E 60%, #8E6B2D 100%);
+  --gradient-btn-gold: linear-gradient(135deg, #ECC880 0%, #C99B4A 50%, #9B722B 100%);
+  --gradient-btn-signin: rgba(7, 11, 18, 0.7);
 }
 
 /* ── Tailwind v4 Theme Extension ───────────────────────────────── */
@@ -94,6 +99,23 @@ body {
 
 /* ── Utility Classes ───────────────────────────────────────────── */
 
+/* ── Orbital Ingestion Keyframes ───────────────────────────── */
+@keyframes orbitalPan {
+  0% {
+    transform: scale(1) translate(0, 0);
+  }
+  50% {
+    transform: scale(1.04) translate(-1%, -0.8%);
+  }
+  100% {
+    transform: scale(1) translate(0, 0);
+  }
+}
+
+.animate-orbital-pan {
+  animation: orbitalPan 36s ease-in-out infinite;
+}
+
 /* Glassmorphism Cards */
 .glass-panel {
   background-color: rgba(22, 33, 39, 0.5); /* Jungle Green 50% */
@@ -129,35 +151,73 @@ body {
   pointer-events: none;
 }
 
-/* 1. Metallic Text Utility */
-.text-metallic-gold {
-  background: linear-gradient(135deg, #F9D976 0%, #E8B546 50%, #B88029 100%);
+/* 1. Metallic Text Utility - True Champagne-Gold Gradient */
+.text-metallic-champagne {
+  background: linear-gradient(180deg, #FFF1D0 0%, #D8B26E 60%, #8E6B2D 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   color: transparent;
   display: inline-block;
 }
 
-/* 2. Metallic Solid Button Utility */
-.btn-metallic-gold {
-  background: linear-gradient(135deg, #F9D976 0%, #E8B546 50%, #B88029 100%);
-  box-shadow: inset 0px 1px 2px rgba(255, 255, 255, 0.6), 0px 4px 15px rgba(232, 181, 70, 0.3);
-  color: #050B14 !important;
+/* 2. Metallic Solid Button Utility - Champagne-Gold */
+.btn-metallic-champagne {
+  background: linear-gradient(135deg, #ECC880 0%, #C99B4A 50%, #9B722B 100%);
+  box-shadow: 0 0 25px rgba(201, 155, 74, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.4);
+  color: #050811 !important;
   font-weight: 700;
-  border: none;
+  border: 1px solid rgba(255, 255, 255, 0.3);
   border-radius: 0.375rem;
   transition: all 0.2s ease-in-out;
 }
-.btn-metallic-gold:hover {
+.btn-metallic-champagne:hover {
   filter: brightness(1.1);
-  box-shadow: inset 0px 1px 3px rgba(255, 255, 255, 0.8), 0px 6px 20px rgba(232, 181, 70, 0.45);
+  box-shadow: 0 0 30px rgba(201, 155, 74, 0.6), inset 0 1px 0 rgba(255, 255, 255, 0.5);
 }
 
-/* 3. Outlined Elements & Borders */
-.border-metallic-gold {
-  border: 1px solid #E8B546;
+/* 3. Outlined Sign In Button */
+.btn-signin-glass {
+  background: rgba(7, 11, 18, 0.7);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(216, 178, 110, 0.4);
+  color: #E8D3A2;
   border-radius: 0.375rem;
-  box-shadow: 0 0 10px rgba(232, 181, 70, 0.15);
+  transition: all 0.2s ease-in-out;
+}
+.btn-signin-glass:hover {
+  background: rgba(7, 11, 18, 0.85);
+  border: 1px solid rgba(216, 178, 110, 0.6);
+  color: #FFF1D0;
+}
+
+/* 4. Outlined Elements & Borders */
+.border-metallic-champagne {
+  border: 1px solid #D8B26E;
+  border-radius: 0.375rem;
+  box-shadow: 0 0 10px rgba(216, 178, 110, 0.15);
+}
+
+/* ── Tactical Pulse Matrix Canvas Animation ─────────────────── */
+@keyframes tactical-pulse {
+  0% { transform: scale(0.8); opacity: 0; }
+  10% { opacity: 1; }
+  100% { transform: scale(2.5); opacity: 0; }
+}
+
+.animate-tactical-pulse {
+  animation: tactical-pulse 2.5s ease-out infinite;
+}
+
+/* Telemetry ping fade-up animation */
+@keyframes telemetry-fade-up {
+  0% { opacity: 0; transform: translateY(0); }
+  10% { opacity: 1; }
+  100% { opacity: 0; transform: translateY(-20px); }
+}
+
+.animate-telemetry-ping {
+  animation: telemetry-fade-up 3s ease-out infinite;
 }
 
 /* ── Scrollbar Styling ─────────────────────────────────────────── */

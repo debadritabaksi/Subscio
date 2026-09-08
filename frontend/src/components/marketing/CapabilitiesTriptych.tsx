@@ -16,24 +16,24 @@ export default function CapabilitiesTriptych() {
 
       <div className="max-w-7xl mx-auto px-8 grid md:grid-cols-3 gap-8 relative z-10">
         
-        <div className="card-interactive-pop bg-[#162127] bg-opacity-40 backdrop-blur-xl -webkit-backdrop-blur-xl border border-[#CA9C68]/30 shadow-[inset_0_1px_1px_rgba(255,255,255,0.1),0_20px_35px_-10px_rgba(0,0,0,0.5)] relative z-20 p-12 space-y-6 transition-all duration-300 hover:-translate-y-2 hover:shadow-[0_20px_35px_-10px_rgba(232,181,70,0.25)] hover:border-[#E8B546] rounded-lg">
-          <Compass size={40} className="text-gold" />
+        <div className="card-interactive-pop bg-slate-900/40 backdrop-blur-xl -webkit-backdrop-blur-xl border border-white/10 shadow-[inset_0_1px_1px_rgba(255,255,255,0.1),0_20px_35px_-10px_rgba(0,0,0,0.5)] relative z-20 p-12 space-y-6 transition-all duration-300 hover:-translate-y-2 hover:shadow-[0_20px_35px_-10px_rgba(232,181,70,0.25)] hover:border-[#D4AF37]/40 rounded-lg">
+          <Compass size={40} className="text-[#E8B546]" />
           <h3 className="text-[24px] font-semibold text-pearl">Discovery</h3>
           <p className="text-pearl/70 text-[14px] leading-relaxed">
             Mapping the dark web of corporate activity. Identifying key technical shifts before they hit public press releases.
           </p>
         </div>
 
-        <div className="card-interactive-pop bg-[#162127] bg-opacity-40 backdrop-blur-xl -webkit-backdrop-blur-xl border border-[#CA9C68]/30 shadow-[inset_0_1px_1px_rgba(255,255,255,0.1),0_20px_35px_-10px_rgba(0,0,0,0.5)] relative z-20 p-12 space-y-6 transition-all duration-300 hover:-translate-y-2 hover:shadow-[0_20px_35px_-10px_rgba(232,181,70,0.25)] hover:border-[#E8B546] rounded-lg">
-          <RadioReceiver size={40} className="text-gold" />
+        <div className="card-interactive-pop bg-slate-900/40 backdrop-blur-xl -webkit-backdrop-blur-xl border border-white/10 shadow-[inset_0_1px_1px_rgba(255,255,255,0.1),0_20px_35px_-10px_rgba(0,0,0,0.5)] relative z-20 p-12 space-y-6 transition-all duration-300 hover:-translate-y-2 hover:shadow-[0_20px_35px_-10px_rgba(232,181,70,0.25)] hover:border-[#D4AF37]/40 rounded-lg">
+          <RadioReceiver size={40} className="text-[#E8B546]" />
           <h3 className="text-[24px] font-semibold text-pearl">Harvesting</h3>
           <p className="text-pearl/70 text-[14px] leading-relaxed">
             Sub-second ingestion of technical signals from developer ecosystems, job boards, and cloud infrastructure shifts.
           </p>
         </div>
 
-        <div className="card-interactive-pop bg-[#162127] bg-opacity-40 backdrop-blur-xl -webkit-backdrop-blur-xl border border-[#CA9C68]/30 shadow-[inset_0_1px_1px_rgba(255,255,255,0.1),0_20px_35px_-10px_rgba(0,0,0,0.5)] relative z-20 p-12 space-y-6 transition-all duration-300 hover:-translate-y-2 hover:shadow-[0_20px_35px_-10px_rgba(232,181,70,0.25)] hover:border-[#E8B546] rounded-lg">
-          <ShieldEllipsis size={40} className="text-gold" />
+        <div className="card-interactive-pop bg-slate-900/40 backdrop-blur-xl -webkit-backdrop-blur-xl border border-white/10 shadow-[inset_0_1px_1px_rgba(255,255,255,0.1),0_20px_35px_-10px_rgba(0,0,0,0.5)] relative z-20 p-12 space-y-6 transition-all duration-300 hover:-translate-y-2 hover:shadow-[0_20px_35px_-10px_rgba(232,181,70,0.25)] hover:border-[#D4AF37]/40 rounded-lg">
+          <ShieldEllipsis size={40} className="text-[#E8B546]" />
           <h3 className="text-[24px] font-semibold text-pearl">Outreach Safeguards</h3>
           <p className="text-pearl/70 text-[14px] leading-relaxed">
             Automated compliance filters ensuring all signals meet global SOC2 and GDPR requirements before agent activation.

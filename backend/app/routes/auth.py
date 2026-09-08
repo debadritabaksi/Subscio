@@ -202,9 +202,9 @@ async def delete_account(current_user: UserORM = Depends(get_current_user), db: 
     await db.execute(delete(TargetProfileORM).where(TargetProfileORM.org_id == str(tenant_id)))
     await db.execute(delete(UserORM).where(UserORM.id == user_id))
     await db.execute(delete(TenantORM).where(TenantORM.id == tenant_id))
-    
+
     await db.commit()
-    return {"status": "success", "message": "Account and all associated pipeline data wiped."}
+    return {"status": "success", "message": "Account and associated data deleted successfully."}
 
 
 from typing import Optional
@@ -247,28 +247,28 @@ async def update_profile(
     """Update company details for the authenticated user."""
     result = await db.execute(select(TenantORM).filter(TenantORM.id == current_user.tenant_id))
     tenant = result.scalars().first()
-    
+
     if not tenant:
         raise HTTPException(status_code=404, detail="Organization not found")
-        
-    if profile_data.company_name:
+
+    if profile_data.company_name is not None:
         tenant.name = profile_data.company_name
-    if profile_data.phone_number:
+    if profile_data.phone_number is not None:
         tenant.phone_number = profile_data.phone_number
-    if profile_data.company_description:
+    if profile_data.company_description is not None:
         tenant.product_summary = profile_data.company_description
-    if profile_data.website_url:
+    if profile_data.website_url is not None:
         tenant.website_url = profile_data.website_url
-    if profile_data.logo_url:
+    if profile_data.logo_url is not None:
         tenant.logo_url = profile_data.logo_url
-        
-    if profile_data.username:
+
+    if profile_data.username is not None:
         current_user.name = profile_data.username
-    
+
     await db.commit()
     await db.refresh(tenant)
     await db.refresh(current_user)
-    
+
     return {
         "message": "Profile updated successfully.",
         "profile": {
@@ -295,8 +295,8 @@ async def change_password(
 ):
     if current_user.password_hash != hash_password(data.current_password):
         raise HTTPException(status_code=400, detail="Incorrect current password")
-    
+
     current_user.password_hash = hash_password(data.new_password)
     await db.commit()
-    
+
     return {"status": "success", "message": "Password updated successfully."}

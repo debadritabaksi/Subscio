@@ -4,7 +4,7 @@ export default function MarketingLayout({
   children: React.ReactNode;
 }) {
   return (
-    <div className="min-h-screen bg-obsidian text-pearl relative z-0">
+    <div className="min-h-screen bg-transparent text-pearl relative z-0">
       {children}
     </div>
   );

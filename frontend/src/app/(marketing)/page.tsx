@@ -1,29 +1,48 @@
-import NavBar from "@/components/marketing/NavBar";
 import HeroSection from "@/components/marketing/HeroSection";
-import MetricBanner from "@/components/marketing/MetricBanner";
 import ArchitectureWalkthrough from "@/components/marketing/ArchitectureWalkthrough";
-import CapabilitiesTriptych from "@/components/marketing/CapabilitiesTriptych";
 import AgentBentoGrid from "@/components/marketing/AgentBentoGrid";
 import FoundersRegistry from "@/components/marketing/FoundersRegistry";
-import CTASection from "@/components/marketing/CTASection";
 import Footer from "@/components/marketing/Footer";
-import NebulaBackground from "@/components/marketing/NebulaBackground";
+import EarthRotationFallback from "@/components/marketing/EarthRotationFallback";
 
 export default function MarketingPage() {
   return (
-    <>
-      <NebulaBackground />
-      <NavBar />
-      <main className="mt-16 pt-8 pb-0">
+    <div className="relative min-h-screen w-full selection:bg-teal-500/30 text-pearl overflow-x-hidden">
+      {/* Cinematic Orbital Earth Background */}
+      <div className="fixed inset-0 -z-10 pointer-events-none overflow-hidden">
+        {/* Video Layer */}
+        <video
+          autoPlay
+          loop
+          muted
+          playsInline
+          className="absolute inset-0 w-full h-full object-cover"
+          poster="/assets/hero-bg.jpg"
+        >
+          <source src="/assets/earth-orbit-loop.webm" type="video/webm" />
+          <source src="/assets/earth-orbit-loop.mp4" type="video/mp4" />
+        </video>
+        {/* Canvas Fallback: Continuous Earth Rotation */}
+        <div className="absolute inset-0">
+          <EarthRotationFallback />
+        </div>
+        {/* Overlay gradient for depth */}
+        <div className="absolute inset-0 bg-gradient-to-b from-black/20 via-transparent to-black/30 pointer-events-none" />
+      </div>
+
+      <main className="relative z-10">
         <HeroSection />
-        <MetricBanner />
-        <ArchitectureWalkthrough />
-        <CapabilitiesTriptych />
-        <AgentBentoGrid />
-        <FoundersRegistry />
-        <CTASection />
+        <div id="architecture">
+          <ArchitectureWalkthrough />
+        </div>
+        <div id="agents">
+          <AgentBentoGrid />
+        </div>
+        <div id="team">
+          <FoundersRegistry />
+        </div>
       </main>
       <Footer />
-    </>
+    </div>
   );
 }

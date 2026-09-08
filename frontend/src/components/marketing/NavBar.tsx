@@ -1,52 +1,58 @@
+"use client";
+
+import { useState, useEffect } from "react";
 import Link from "next/link";
+import { ArrowRight, Sparkles } from "lucide-react";
 
 export default function NavBar() {
-  return (
-    <nav className="fixed top-0 w-full z-50 bg-obsidian/80 backdrop-blur-md border-b border-jungle h-16 flex justify-between items-center px-8 mx-auto left-0 right-0">
-      <div className="flex items-center gap-8 max-w-7xl w-full mx-auto justify-between">
-        <div className="flex items-center gap-8">
-          <span className="text-[24px] font-bold text-metallic-gold tracking-tighter">
-            SIGNALS ENGINE
-          </span>
-          <div className="hidden md:flex gap-6">
-            <Link 
-              href="#" 
-              className="text-[11px] font-extrabold uppercase tracking-widest text-metallic-gold border-b-2 border-gold pb-1"
-            >
-              Platform Architecture
-            </Link>
-            <Link 
-              href="#" 
-              className="text-[11px] font-extrabold uppercase tracking-widest text-pearl/70 hover:text-metallic-gold transition-colors duration-200"
-            >
-              Autonomous Agents
-            </Link>
-            <Link 
-              href="#" 
-              className="text-[11px] font-extrabold uppercase tracking-widest text-pearl/70 hover:text-metallic-gold transition-colors duration-200"
-            >
-              Security & Compliance
-            </Link>
-            <Link 
-              href="#" 
-              className="text-[11px] font-extrabold uppercase tracking-widest text-pearl/70 hover:text-metallic-gold transition-colors duration-200"
-            >
-              Case Studies
-            </Link>
-          </div>
-        </div>
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
 
-        <div className="flex items-center gap-6">
-          <div className="hidden lg:flex items-center gap-2">
-            <span className="w-2 h-2 rounded-full bg-gold animate-pulse shadow-[0_0_8px_var(--color-gold)]"></span>
-            <span className="text-[11px] font-extrabold tracking-widest uppercase text-metallic-gold">
-              PLATFORM LIVE
-            </span>
-          </div>
-          <button className="btn-metallic-gold px-6 py-2 text-[11px] font-extrabold uppercase tracking-widest transition-all">
-            Deploy Harvester →
-          </button>
-        </div>
+  useEffect(() => {
+    setIsAuthenticated(localStorage.getItem("subscio_auth") === "true");
+  }, []);
+
+  return (
+    <nav className="fixed top-6 left-1/2 -translate-x-1/2 rounded-full px-8 py-3 z-50 bg-slate-900/40 backdrop-blur-md border border-white/10 shadow-[0_15px_35px_rgba(0,0,0,0.6)] flex items-center justify-between gap-6 md:gap-8 max-w-[90vw] md:max-w-fit whitespace-nowrap transition-all duration-300 hover:border-white/20">
+      {/* Brand logo & live beacon */}
+      <Link href="/" className="flex items-center gap-2 group">
+        <span className="w-2 h-2 rounded-full bg-[#D4AF37] animate-pulse shadow-[0_0_8px_rgba(212,175,55,0.8)]" />
+        <span className="text-xs font-mono font-bold uppercase tracking-[0.25em] text-pearl group-hover:text-[#F5D061] transition-colors">
+          SUBSCIO
+        </span>
+      </Link>
+
+      {/* Nav links */}
+      <div className="hidden md:flex items-center gap-6 text-[11px] font-mono uppercase tracking-wider text-pearl/70">
+        <a href="#architecture" className="hover:text-[#F5D061] transition-colors">
+          Architecture
+        </a>
+        <a href="#agents" className="hover:text-[#F5D061] transition-colors">
+          Agents
+        </a>
+        <a href="#team" className="hover:text-[#F5D061] transition-colors">
+          Team
+        </a>
+      </div>
+
+      {/* Action CTA */}
+      <div className="flex items-center gap-3">
+        {isAuthenticated ? (
+          <Link
+            href="/dashboard"
+            className="flex items-center gap-1.5 text-[10px] font-mono font-bold uppercase tracking-widest px-3.5 py-1.5 rounded-full bg-gradient-to-br from-[#ECC880] via-[#C99B4A] to-[#9B722B] text-[#050811 font-bold border border-white/30 shadow-[0_0_15px_rgba(201,155,74,0.4)] hover:brightness-110 hover:shadow-[0_0_20px_rgba(201,155,74,0.6)] transition-all"
+          >
+            <span>Console</span>
+            <ArrowRight size={12} className="text-[#050811]" />
+          </Link>
+        ) : (
+          <Link
+            href="/login"
+            className="flex items-center gap-1.5 text-[10px] font-mono font-bold uppercase tracking-widest px-3.5 py-1.5 rounded-full bg-slate-900/70 backdrop-blur-md border border-[#D8B26E]/40 text-[#E8D3A2] hover:bg-slate-800 hover:border-[#D8B26E]/60 hover:text-[#FFF1D0 transition-all"
+          >
+            <span>Sign In</span>
+            <ArrowRight size={12} className="text-[#E8D3A2]" />
+          </Link>
+        )}
       </div>
     </nav>
   );
