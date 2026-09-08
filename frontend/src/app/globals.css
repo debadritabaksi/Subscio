@@ -116,6 +116,7 @@ body {
   animation: orbitalPan 36s ease-in-out infinite;
 }
 
+
 /* Glassmorphism Cards */
 .glass-panel {
   background-color: rgba(22, 33, 39, 0.5); /* Jungle Green 50% */

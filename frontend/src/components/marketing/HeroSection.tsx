@@ -1,227 +1,45 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
 
 export default function HeroSection() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const canvasRef = useRef<HTMLCanvasElement | null>(null);
+  const [isScrolled, setIsScrolled] = useState(false);
 
   useEffect(() => {
     setIsAuthenticated(localStorage.getItem("subscio_auth") === "true");
   }, []);
 
   useEffect(() => {
-    const canvas = canvasRef.current;
-    if (!canvas) return;
-
-    const ctx = canvas.getContext("2d");
-    if (!ctx) return;
-
-    let animationId: number;
-    let telemetryTimeout: ReturnType<typeof setTimeout> | null = null;
-    const startTime = performance.now();
-
-    const resize = () => {
-      const rect = canvas.getBoundingClientRect();
-      const dpr = window.devicePixelRatio || 1;
-      canvas.width = rect.width * dpr;
-      canvas.height = rect.height * dpr;
-      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-    };
-
-    // Clear any pending telemetry
-    const clearTelemetry = () => {
-      if (telemetryTimeout) {
-        clearTimeout(telemetryTimeout);
-        telemetryTimeout = null;
+    const handleScroll = () => {
+      if (window.scrollY > 50) {
+        setIsScrolled(true);
+      } else {
+        setIsScrolled(false);
       }
     };
-
-    // Telemetry ping display state
-    const telemetryPings: { text: string; y: number; startTime: number }[] = [];
-
-    // Schedule a telemetry ping
-    const scheduleTelemetry = (yBase: number, yOffset: number) => {
-      clearTelemetry();
-      
-      const pings = [
-        { text: "0.02s · Series B $40M · EMPANELMENT ACTIVE", delay: 0 },
-        { text: "0.05s · GeM RFP 4,000 Units · DETECTED", delay: 400 },
-      ];
-
-      pings.forEach((pingData, idx) => {
-        const timeoutId = setTimeout(() => {
-          telemetryPings.push({
-            text: pingData.text,
-            y: yBase - 40 - yOffset + (idx * 18),
-            startTime: performance.now(),
-          });
-        }, pingData.delay);
-        telemetryTimeout = timeoutId;
-      });
-    };
-
-    const render = (now: number) => {
-      const rect = canvas.getBoundingClientRect();
-      const width = rect.width;
-      const height = rect.height;
-
-      if (width === 0 || height === 0) {
-        animationId = requestAnimationFrame(render);
-        return;
-      }
-
-      ctx.clearRect(0, 0, width, height);
-
-      // Tactical Pulse configuration
-      const pulseInterval = 2500; // 2.5 seconds
-      const elapsed = (now - startTime) / 1000;
-      const pulsePhase = (elapsed * 1000) % pulseInterval;
-      const pulseProgress = pulsePhase / pulseInterval; // 0 to 1
-
-      // Radar reticle center position (over the horizon hub)
-      const bx = width * 0.52;
-      const by = height * 0.45;
-
-      // ── Radar Reticle ──
-      ctx.save();
-      ctx.beginPath();
-      ctx.arc(bx, by, 60, 0, Math.PI * 2);
-      ctx.strokeStyle = "rgba(216, 178, 110, 0.25)";
-      ctx.lineWidth = 1;
-      ctx.setLineDash([3, 6]);
-      ctx.stroke();
-
-      // Crosshairs
-      const reticleTick = 15;
-      ctx.strokeStyle = "rgba(216, 178, 110, 0.3)";
-      ctx.lineWidth = 1;
-      ctx.setLineDash([]);
-      ctx.beginPath();
-      ctx.moveTo(bx - reticleTick - 60, by);
-      ctx.lineTo(bx - 60, by);
-      ctx.moveTo(bx + 60, by);
-      ctx.lineTo(bx + reticleTick + 60, by);
-      ctx.moveTo(bx, by - reticleTick - 60);
-      ctx.lineTo(bx, by - 60);
-      ctx.moveTo(bx, by + 60);
-      ctx.lineTo(bx, by + reticleTick + 60);
-      ctx.stroke();
-      ctx.restore();
-
-      // ── Tactical Pulse Ring (expands every 2.5 seconds) ──
-      if (pulseProgress < 1) {
-        const pulseRadius = 15 + pulseProgress * 180;
-        const pulseAlpha = Math.max(0, (1 - pulseProgress) * 0.6);
-        
-        ctx.save();
-        ctx.beginPath();
-        ctx.arc(bx, by, pulseRadius, 0, Math.PI * 2);
-        ctx.strokeStyle = `rgba(216, 178, 110, ${pulseAlpha})`;
-        ctx.lineWidth = 1.5;
-        ctx.stroke();
-        ctx.restore();
-      }
-
-      // ── Telemetry Pings (fading upward) ──
-      ctx.font = "10px ui-monospace, SFMono-Regular, Menlo, monospace";
-      telemetryPings.forEach((ping) => {
-        const pingElapsed = (now - ping.startTime) / 1000;
-        const pingLife = 3; // seconds
-        const pingProgress = Math.min(pingElapsed / pingLife, 1);
-        
-        if (pingProgress < 1) {
-          const alpha = Math.max(0, 1 - pingProgress) * 0.8;
-          const yOffset = pingProgress * 20;
-          
-          ctx.fillStyle = `rgba(216, 178, 110, ${alpha})`;
-          ctx.fillText(ping.text, bx + 70, ping.y - yOffset);
-        }
-      });
-
-      // Schedule new telemetry pings every 2.5 seconds
-      if (pulsePhase < 100 && pulsePhase > 99) {
-        scheduleTelemetry(by, 0);
-      }
-
-      // ── Horizon atmospheric glow (faint) ──
-      const horizonGlow = ctx.createRadialGradient(bx, by, 0, bx, by, 100);
-      horizonGlow.addColorStop(0, "rgba(216, 178, 110, 0.15)");
-      horizonGlow.addColorStop(0.5, "rgba(216, 178, 110, 0.05)");
-      horizonGlow.addColorStop(1, "rgba(216, 178, 110, 0)");
-      ctx.fillStyle = horizonGlow;
-      ctx.beginPath();
-      ctx.arc(bx, by, 100, 0, Math.PI * 2);
-      ctx.fill();
-
-      // ── HUD Status Badge ──
-      ctx.save();
-      ctx.font = "bold 9px ui-monospace, SFMono-Regular, Menlo, monospace";
-      ctx.fillStyle = "#D8B26E";
-      ctx.fillText("TACTICAL PULSE :: ACTIVE", bx + 18, by - 30);
-      ctx.fillStyle = "rgba(248, 250, 252, 0.65)";
-      ctx.font = "8px ui-monospace, SFMono-Regular, Menlo, monospace";
-      ctx.fillText("AUTONOMOUS SURVEILLANCE MODE", bx + 18, by - 18);
-      ctx.restore();
-
-      animationId = requestAnimationFrame(render);
-    };
-
-    resize();
-    window.addEventListener("resize", resize);
-    animationId = requestAnimationFrame(render);
-
-    return () => {
-      window.removeEventListener("resize", resize);
-      cancelAnimationFrame(animationId);
-      clearTelemetry();
-    };
+    window.addEventListener("scroll", handleScroll, { passive: true });
+    return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
   return (
     <section className="relative w-full overflow-hidden min-h-[85vh] border-b border-white/10 flex items-center bg-transparent">
-      {/* Video Earth Rotation Background */}
-      <video
-        autoPlay
-        loop
-        muted
-        playsInline
-        className="absolute inset-0 w-full h-full object-cover pointer-events-none -z-20"
-      >
-        <source src="/assets/earth-orbit-loop.webm" type="video/webm" />
-        <source src="/assets/earth-orbit-loop.mp4" type="video/mp4" />
-      </video>
 
-      {/* Canvas Fallback for Earth Rotation if video not available */}
-      <canvas
-        id="earth-rotation-fallback"
-        className="absolute inset-0 w-full h-full object-cover pointer-events-none -z-15"
-        style={{ display: "none" }}
-      />
-
-      {/* Contrast Scrim - Bottom-Left Vignette for CTA Area */}
-      <div
-        className="absolute inset-0 pointer-events-none -z-10"
-        style={{
-          background: "radial-gradient(ellipse_at_bottom_left, rgba(3,7,18,0.95) 0%, rgba(3,7,18,0.6) 35%, transparent 70%)",
-        }}
-      />
-
-      <div className="relative z-10 flex flex-col md:flex-row items-center px-8 py-16 md:py-20 max-w-7xl mx-auto gap-12 w-full bg-transparent">
+      <div className="relative z-10 flex flex-col md:flex-row items-center px-8 py-16 md:py-20 max-w-7xl mx-auto gap-12 w-full">
         {/* Hero Left Content */}
-        <div className="flex-1 space-y-6 bg-transparent relative">
+        <div className="flex-1 space-y-6 relative">
           {/* Status Badge */}
           <div className="inline-flex items-center gap-2 px-3.5 py-1.5 border border-[#D8B26E]/30 bg-[#D8B26E]/10 rounded-full backdrop-blur-md shadow-[0_0_15px_rgba(216,178,110,0.25)]">
             <span className="w-2 h-2 rounded-full bg-[#D8B26E] animate-pulse shadow-[0_0_8px_rgba(216,178,110,0.8)]" />
             <span className="text-[11px] font-mono font-extrabold text-[#D8B26E] uppercase tracking-[0.22em]">
-              Autonomous Tactical Intelligence
+              Autonomous Signal Intelligence
             </span>
           </div>
 
-          {/* Brand Text - Champagne-Gold Metallic Gradient */}
+          {/* Brand Text — Champagne-Gold Metallic Gradient */}
           <div className="space-y-1 pt-1">
-            <h1 className="text-6xl md:text-8xl bg-[length:auto_100%] bg-[linear-gradient(180deg,#FFF1D0_0%,#D8B26E_60%,#8E6B2D_100%)] bg-clip-text text-transparent font-extrabold tracking-tight uppercase leading-none drop-shadow-[0_4px_28px_rgba(216,178,110,0.25)]">
+            <h1 className="text-6xl md:text-8xl font-extrabold tracking-tight uppercase leading-none drop-shadow-[0_4px_28px_rgba(216,178,110,0.25)] text-metallic-champagne">
               SUBSCIO
             </h1>
             <p className="text-xs font-mono text-[#D8B26E]/80 tracking-[0.3em] uppercase pt-2">
@@ -229,20 +47,20 @@ export default function HeroSection() {
             </p>
           </div>
 
-          {/* Headline - Champagne-Gold Gradient */}
-          <h2 className="text-3xl md:text-5xl font-bold leading-snug tracking-tight pt-2">
+          {/* Headline — Champagne-Gold Accent */}
+          <h2 className="text-3xl md:text-5xl font-bold text-pearl leading-snug tracking-tight pt-2">
             Turn Global{" "}
-            <span className="bg-[length:auto_100%] bg-[linear-gradient(180deg,#FFF1D0_0%,#D8B26E_60%,#8E6B2D_100%)] bg-clip-text text-transparent font-extrabold">
+            <span className="text-metallic-champagne">
               Internet Noise
             </span>{" "}
             Into High-Intent B2B Revenue.
           </h2>
 
           <p className="text-[15px] md:text-[16px] text-pearl/80 max-w-xl leading-relaxed font-sans">
-            Deploy autonomous AI agents that intercept, synthesize, and score raw
-            market signals across GitHub, live RSS feeds, and the open web —
-            delivering verified intent and warm executive pitches directly to your
-            pipeline.
+            Deploy autonomous AI agents that intercept, synthesize, and score
+            raw market signals across GitHub, live RSS feeds, and the open web —
+            delivering verified intent and warm executive pitches directly to
+            your pipeline.
           </p>
 
           <div className="flex flex-wrap gap-4 pt-4">
@@ -272,13 +90,132 @@ export default function HeroSection() {
           </div>
         </div>
 
-        {/* Hero Right: Tactical Pulse Matrix Canvas */}
-        <div className="w-full max-w-2xl bg-transparent">
-          <canvas
-            id="tactical-pulse-canvas"
-            ref={canvasRef}
-            className="w-full h-[420px] md:h-[520px] bg-transparent"
-          />
+        {/* Hero Right — Expansive Multi-Card Intercept Scatter */}
+        <div className="flex-1 w-full flex items-center justify-center">
+          <div className="relative w-full h-[480px] lg:h-[540px] flex items-center justify-center pointer-events-auto">
+            <div 
+              className={`group relative w-[340px] sm:w-[380px] h-[220px] cursor-pointer transition-all duration-700 ${
+                isScrolled ? "pointer-events-none" : ""
+              }`}
+            >
+              {/* Floating Satellite Status Badge */}
+              <div className="absolute -top-6 right-2 z-30 flex items-center gap-1.5 px-3 py-1 rounded-full bg-slate-900/80 backdrop-blur-md border border-white/15 text-[10px] font-mono text-slate-300 tracking-wider shadow-lg transition-all duration-700 group-hover:-translate-y-12 group-hover:translate-x-8">
+                <span className="w-1.5 h-1.5 rounded-full bg-[#D8B26E] animate-pulse" />
+                GITHUB SIGNAL VERIFIED
+              </div>
+
+              {/* CARD 3: Top-Right Scatter Node (Nexus AI Systems) */}
+              <div className={`absolute inset-0 rounded-2xl bg-slate-950/45 backdrop-blur-xl border border-white/15 p-5 shadow-2xl transition-all duration-700 ease-[cubic-bezier(0.16,1,0.3,1)] transform ${
+                !isScrolled 
+                  ? "group-hover:translate-x-28 group-hover:-translate-y-32 group-hover:rotate-[5deg] group-hover:scale-100" 
+                  : ""
+              } translate-x-3 translate-y-3 rotate-[3deg] opacity-75 group-hover:opacity-100 z-10`}>
+                <div className="flex items-center justify-between border-b border-white/10 pb-2 mb-3">
+                  <div className="flex items-center gap-1.5">
+                    <span className="w-1.5 h-1.5 rounded-full bg-[#D8B26E]" />
+                    <span className="text-[10px] font-mono tracking-widest text-[#D8B26E] uppercase">INGESTION CACHE</span>
+                  </div>
+                  <span className="text-[9px] font-mono text-slate-400 uppercase">RESOLVED</span>
+                </div>
+                <div className="space-y-0.5 mb-2.5">
+                  <h4 className="text-sm font-semibold text-white">Nexus AI Systems</h4>
+                  <p className="text-[11px] font-mono text-cyan-400">RFP: GPU CLUSTER INFRASTRUCTURE</p>
+                </div>
+                <div className="space-y-1 mb-2.5">
+                  <div className="flex justify-between text-[10px] font-mono">
+                    <span className="text-slate-400 uppercase">Readiness</span>
+                    <span className="text-[#D8B26E] font-bold">92/100</span>
+                  </div>
+                  <div className="w-full h-1 rounded-full bg-white/10 overflow-hidden">
+                    <div className="h-full rounded-full bg-[#D8B26E] w-[92%]" />
+                  </div>
+                </div>
+                <div className="flex justify-between items-center pt-1 text-[9px] font-mono text-slate-400">
+                  <span>NODE_BETA_03</span>
+                  <span className="text-emerald-400">BUDGET LOCKED ($1.2M)</span>
+                </div>
+              </div>
+
+              {/* CARD 2: Bottom-Left Scatter Node (Vanguard Fintech) */}
+              <div className={`absolute inset-0 rounded-2xl bg-slate-950/50 backdrop-blur-xl border border-white/15 p-5 shadow-2xl transition-all duration-700 ease-[cubic-bezier(0.16,1,0.3,1)] transform ${
+                !isScrolled 
+                  ? "group-hover:-translate-x-36 group-hover:translate-y-24 group-hover:rotate-[-7deg] group-hover:scale-100" 
+                  : ""
+              } translate-x-1.5 translate-y-1.5 rotate-[1.5deg] opacity-85 group-hover:opacity-100 z-15`}>
+                <div className="flex items-center justify-between border-b border-white/10 pb-2 mb-3">
+                  <div className="flex items-center gap-1.5">
+                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
+                    <span className="text-[10px] font-mono tracking-widest text-emerald-400 uppercase">HIGH INTENT SIGNAL</span>
+                  </div>
+                  <span className="text-[9px] font-mono text-slate-400 uppercase">EXPANDING</span>
+                </div>
+                <div className="space-y-0.5 mb-2.5">
+                  <h4 className="text-sm font-semibold text-white">Vanguard Fintech Corp</h4>
+                  <p className="text-[11px] font-mono text-amber-300">TRIGGER: SOC2 COMPLIANCE OVERHAUL</p>
+                </div>
+                <div className="space-y-1 mb-2.5">
+                  <div className="flex justify-between text-[10px] font-mono">
+                    <span className="text-slate-400 uppercase">Match Score</span>
+                    <span className="text-emerald-400 font-bold">96/100</span>
+                  </div>
+                  <div className="w-full h-1 rounded-full bg-white/10 overflow-hidden">
+                    <div className="h-full rounded-full bg-emerald-400 w-[96%]" />
+                  </div>
+                </div>
+                <div className="flex justify-between items-center pt-1 text-[9px] font-mono text-slate-400">
+                  <span>NODE_GAMMA_11</span>
+                  <span className="text-[#D8B26E]">INTENT CONFIRMED</span>
+                </div>
+              </div>
+
+              {/* CARD 1: Anchor Core Node (Global Cloud Inc) */}
+              <div className={`relative z-20 w-full h-full rounded-2xl bg-slate-950/60 backdrop-blur-xl border border-white/20 p-5 shadow-[0_20px_50px_rgba(0,0,0,0.7)] transition-all duration-700 ease-[cubic-bezier(0.16,1,0.3,1)] transform ${
+                !isScrolled 
+                  ? "group-hover:-translate-y-4 group-hover:scale-105" 
+                  : ""
+              }`}>
+                {/* Header */}
+                <div className="flex items-center justify-between border-b border-white/10 pb-2.5 mb-3">
+                  <div className="flex items-center gap-2">
+                    <span className="w-2 h-2 rounded-full bg-[#D8B26E] shadow-[0_0_8px_#D8B26E]" />
+                    <span className="text-[11px] font-mono font-bold tracking-widest text-[#D8B26E] uppercase">ACTIVE INTERCEPT</span>
+                  </div>
+                  <span className="text-[10px] font-mono text-slate-400 tracking-widest uppercase">LIVE</span>
+                </div>
+
+                {/* Lead Details */}
+                <div className="space-y-0.5 mb-3">
+                  <h4 className="text-base font-semibold text-white tracking-tight">Global Cloud Inc</h4>
+                  <p className="text-xs font-mono text-emerald-400">INTENT: PURCHASE READY</p>
+                </div>
+
+                {/* Confidence Bar */}
+                <div className="space-y-1 mb-3">
+                  <div className="flex justify-between text-[10px] font-mono">
+                    <span className="text-slate-400 uppercase tracking-wider">Confidence Score</span>
+                    <span className="text-[#D8B26E] font-bold">98/100</span>
+                  </div>
+                  <div className="w-full h-1.5 rounded-full bg-white/10 overflow-hidden">
+                    <div className="h-full rounded-full bg-gradient-to-r from-[#D8B26E] to-[#FFF1D0] w-[98%]" />
+                  </div>
+                </div>
+
+                {/* Badges */}
+                <div className="flex items-center justify-between pt-1">
+                  <span className="px-2 py-0.5 rounded bg-white/5 border border-white/10 text-[10px] font-mono text-slate-400">
+                    NODE_ALPHA_09
+                  </span>
+                  <span className="flex items-center gap-1.5 px-2 py-0.5 rounded bg-[#D8B26E]/10 border border-[#D8B26E]/30 text-[10px] font-mono text-[#D8B26E]">
+                    <svg className="w-3 h-3 fill-current" viewBox="0 0 24 24">
+                      <path d="M12 2L2 22l10-4 10 4L12 2z" />
+                    </svg>
+                    CORSAIR ACTIVE
+                  </span>
+                </div>
+              </div>
+
+            </div>
+          </div>
         </div>
       </div>
     </section>
