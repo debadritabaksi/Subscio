@@ -3,6 +3,8 @@
 ### 🏛️ Intellectual Property Notice:
 The source code, algorithmic scoring models, and multi-agent pipeline architectures for this project represent a production-grade enterprise prototype and architectural showcase. Certain proprietary heuristics and predictive signal ingestion engines are curated for demonstration, portfolio review, and evaluation purposes.
 
+Live Prototype : https://subscio.vercel.app/
+
 ---
 
 
